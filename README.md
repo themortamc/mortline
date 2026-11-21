@@ -105,6 +105,7 @@ caption.txt    texto + hashtags para la publicación
 guion.json     guion, título, búsquedas
 voz.wav        locución sola
 creditos.txt   de dónde salió cada clip y la música
+portada.jpg    tapa para la grilla del perfil (título dentro del recorte 3:4)
 ```
 
 ## Qué se guarda dónde

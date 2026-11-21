@@ -81,7 +81,9 @@ Reglas extra para este reel:
 - Mostrá 2 o 3 cosas puntuales que hace la planilla (de la lista de qué incluye), con ejemplos concretos.
 - Exactamente 2 escenas tienen "buscar": "CAPTURA" (ahí se ve la planilla de verdad en pantalla):
   usalas cuando la frase habla de lo que muestra o calcula la planilla. El resto, búsquedas de stock del rubro.
-- La primera y la última escena NUNCA son "CAPTURA" (arrancan y cierran con imagen real del rubro)."""
+- La primera y la última escena NUNCA son "CAPTURA" (arrancan y cierran con imagen real del rubro).
+- El "buscar" de la primera escena muestra el PROBLEMA del gancho de forma concreta y filmable
+  (ej: "notebook handwritten accounts", "calculator receipts", "phone many messages"), no una persona genérica."""
 
 CIERRES_PRODUCTO = ["La conseguís en la tienda de mortups... el link está en el perfil.",
                     "Está en la tienda de mortups, con el link en el perfil.",
@@ -241,6 +243,7 @@ def escribir(cfg: Config, hist: Historial, tema: str | None = None, rubro: str |
                 con.append(i)
         datos["gancho"] = datos["escenas"][0]["texto"]
     datos["combo"] = combo
+    datos["modelo"] = llm.ULTIMO_MODELO[0]
     datos["cta"] = cta
     return datos
 

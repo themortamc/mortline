@@ -10,7 +10,7 @@ from pathlib import Path
 from .clips import Material
 
 W, H, FPS = 1080, 1920, 30
-COLA = 1.3          # segundos de placa final después de que termina la voz (corta: cuenta para la retención)
+COLA = 1.0          # segundos de placa después de la voz: placa total ~2 s (una placa quieta larga hace swipear)
 TOMA = 2.4          # duración ideal de cada toma: cambiar de imagen antes de 3 s retiene más
 X264 = ["-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p", "-r", str(FPS)]
 
@@ -60,8 +60,22 @@ def _toma(m: Material, inicio: float, dur: float, destino: Path, n: int = 0) -> 
     if m.estilo == "captura":
         # Planilla real: alta 720 px (legible en el celular), sobre fondo de marca. Si es más ancha
         # que la pantalla, paneo lento de izquierda a derecha para recorrerla.
-        alto, y = 720, 400
-        filtro = (f"[1:v]scale=-2:{alto},setsar=1[s];"
+        # Lo más grande posible (que se lea en el celular), pero si es ancha el paneo no puede pasar
+        # de ~350 px/s: más rápido no se alcanza a leer.
+        from PIL import Image
+
+        ancho0, alto0 = Image.open(m.path).size
+        # Planillas muy anchas y bajas: se muestran las columnas de la izquierda (las importantes)
+        # bien grandes, en vez de achicar todo o recorrerla a toda velocidad.
+        recorte = f"crop={min(ancho0, int(alto0 * 2.4))}:{alto0}:0:0," if ancho0 / alto0 > 2.4 else ""
+        ancho1 = min(ancho0, int(alto0 * 2.4)) if recorte else ancho0
+        if alto0 * 1040 / ancho1 >= 420:
+            escala = min(800 / alto0, 1040 / ancho1)  # entra entera y quieta, a todo el ancho
+        else:
+            escala = min(800 / alto0, (1040 + 350 * dur) / ancho1, 420 / alto0)  # ancha: paneo lento
+        alto = int(alto0 * escala) // 2 * 2
+        y = 340 + (800 - alto) // 2
+        filtro = (f"[1:v]{recorte}scale=-2:{alto},setsar=1[s];"
                   f"[0:v][s]overlay=x='if(gt(overlay_w,1040),20-(overlay_w-1040)*t/{dur:.3f},(main_w-overlay_w)/2)'"
                   f":y={y}:eval=frame,fps={FPS},format=yuv420p[v]")
         _ff(["-f", "lavfi", "-i", f"color=c=0x140B24:s={W}x{H}:d={dur:.3f}:r={FPS}", "-loop", "1", "-t", f"{dur:.3f}",
@@ -85,13 +99,18 @@ def _toma(m: Material, inicio: float, dur: float, destino: Path, n: int = 0) -> 
         _ff(["-loop", "1", "-i", str(m.path), "-t", f"{dur:.3f}", "-vf", vf, "-an", *X264, str(destino)])
 
 
-def _placa(assets: Path, dur: float, llamado: str, web: str, trabajo: Path, destino: Path) -> None:
+def cuando_placa(tramos, dur_voz: float) -> float:
+    """La placa entra en el último segundo de la voz (no al principio del llamado)."""
+    return max(tramos[-1][0] + 0.6, dur_voz - 1.1)
+
+
+def _placa(assets: Path, dur: float, llamado: str, web: str, trabajo: Path, destino: Path, precio: str = "") -> None:
     """Placa final: fondo liso de marca, logo recortado, llamado en botón y web en blanco grande.
     Todo entra escalonado (logo, botón, web, aviso) dentro de la zona segura de Instagram/TikTok."""
     logo = assets / "logo.jpg"
     fuerte = assets / "fonts" / "HankenGrotesk-ExtraBold.ttf"
     media = assets / "fonts" / "HankenGrotesk-SemiBold.ttf"
-    textos = {"t1.txt": llamado, "t2.txt": web, "t3.txt": "Link en el perfil"}
+    textos = {"t1.txt": llamado, "t2.txt": web, "t3.txt": "Link en el perfil", "t4.txt": precio or " "}
     for nombre, t in textos.items():
         (trabajo / nombre).write_text(t, encoding="utf-8")
 
@@ -116,20 +135,22 @@ def _placa(assets: Path, dur: float, llamado: str, web: str, trabajo: Path, dest
         f"x=(w-tw)/2:y='{sube(1290, 0.4)}':alpha='{entra(0.4)}',"
         f"drawtext=fontfile='{media}':textfile='{trabajo / 't3.txt'}':fontcolor=0xB9A8D9:fontsize=46:"
         f"x=(w-tw)/2:y='{sube(1420, 0.55)}':alpha='{entra(0.55)}',"
-        f"fps={FPS},setsar=1,format=yuv420p[v]"
+        + (f"drawtext=fontfile='{fuerte}':textfile='{trabajo / 't4.txt'}':fontcolor=0xC9A6FF:fontsize=58:"
+           f"x=(w-tw)/2:y='{sube(960, 0.15)}':alpha='{entra(0.15)}'," if precio else "")
+        + f"fps={FPS},setsar=1,format=yuv420p[v]"
     )
     _ff(["-loop", "1", "-t", f"{dur:.3f}", "-i", str(logo), "-filter_complex", filtro, "-map", "[v]",
          "-t", f"{dur:.3f}", *X264, str(destino)])
 
 
 def armar(*, tramos: list[tuple[float, float]], materiales: list[list[Material]], voz: Path,
-          dur_voz: float, ass: Path, musica: Path | None, assets: Path, llamado: str, web: str,
+          dur_voz: float, ass: Path, musica: Path | None, assets: Path, llamado: str, web: str, precio: str = "",
           trabajo: Path, salida: Path) -> float:
     """Devuelve la duración final. `tramos[-1]` es la escena del llamado: ahí entra la placa."""
     if not shutil.which("ffmpeg"):
         raise VideoError("No encuentro ffmpeg instalado.")
     trabajo.mkdir(parents=True, exist_ok=True)
-    inicio_placa = max(tramos[-1][0], dur_voz - 2.8)
+    inicio_placa = cuando_placa(tramos, dur_voz)
     total = dur_voz + COLA
 
     partes: list[Path] = []
@@ -149,7 +170,7 @@ def armar(*, tramos: list[tuple[float, float]], materiales: list[list[Material]]
             partes.append(destino)
             n += 1
     placa = trabajo / "placa.mp4"
-    _placa(assets, total - inicio_placa, llamado, web, trabajo, placa)
+    _placa(assets, total - inicio_placa, llamado, web, trabajo, placa, precio)
     partes.append(placa)
 
     lista = trabajo / "lista.txt"

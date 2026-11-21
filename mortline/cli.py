@@ -20,7 +20,7 @@ import unicodedata
 from datetime import datetime
 from pathlib import Path
 
-from . import clips, guion, musica, subtitulos, video, voz
+from . import clips, guion, musica, publicacion, subtitulos, video, voz
 from .config import Config, cargar
 from .historial import Historial
 
@@ -113,20 +113,20 @@ def _armar(cfg, hist, datos, carpeta, voz_nombre, con_musica, producto, t0, reha
     tema_musical = musica.elegir(cfg.musica) if con_musica else None
 
     _paso(5, "Armando el video (cortes, placa final, música, subtítulos)…")
-    inicio_placa = max(tramos[-1][0], dur_voz - 2.8)
+    inicio_placa = video.cuando_placa(tramos, dur_voz)
     ass = trabajo / "subtitulos.ass"
     subtitulos.escribir_ass(palabras, ass, hasta=inicio_placa, titulo=datos.get("titulo", ""))
     reel = carpeta / "reel.mp4"
     total = video.armar(
         tramos=tramos, materiales=materiales, voz=audio, dur_voz=dur_voz, ass=ass,
         musica=tema_musical, assets=cfg.assets, llamado=guion.CTAS[datos['cta']]['placa'], web=cfg.web,
+        precio=_precio_txt(cfg, producto),
         trabajo=trabajo, salida=reel,
     )
 
     _paso(6, "Guardando caption, créditos e historial…")
-    caption = datos.get("caption", "").strip()
-    tags = " ".join(datos.get("hashtags", []))
-    (carpeta / "caption.txt").write_text(f"{caption}\n\n{tags}\n", encoding="utf-8")
+    (carpeta / "caption.txt").write_text(publicacion.caption(cfg, datos, producto), encoding="utf-8")
+    publicacion.portada(cfg, datos, materiales, carpeta / "portada.jpg", trabajo)
     if tema_musical:
         creditos.append(f"Música: {tema_musical.name}")
     (carpeta / "creditos.txt").write_text("\n".join(dict.fromkeys(creditos)) + "\n", encoding="utf-8")
@@ -143,6 +143,13 @@ def _armar(cfg, hist, datos, carpeta, voz_nombre, con_musica, producto, t0, reha
     _guardar_en_github()
     print(f"\n✅ Listo en {time.time() - t0:.0f} s · {total:.1f} s de reel\n   {reel}\n   Caption: {carpeta / 'caption.txt'}")
     return reel
+
+
+def _precio_txt(cfg, producto) -> str:
+    if not producto:
+        return ""
+    p = guion.datos_producto(cfg, producto)
+    return ("$" + f"{p['precio']:,}".replace(",", ".") + " · pago único") if p.get("precio") else ""
 
 
 def _guardar_en_github() -> None:

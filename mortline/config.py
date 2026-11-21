@@ -62,7 +62,7 @@ def cargar() -> Config:
         llm_model=os.environ.get("MORTLINE_MODELO", "auto"),
         # Para escribir se prueban primero modelos fuertes; si no responden, "auto" elige otro.
         llm_modelos=tuple(m.strip() for m in os.environ.get(
-            "MORTLINE_MODELOS", "gemini-3.8-flash,deepseek-v4-pro,glm-5.3,auto").split(",") if m.strip()),
+            "MORTLINE_MODELOS", "gemini-3.8-flash,gemini-3.7-flash,glm-5.3,deepseek-v4-pro,gpt-5.6-luna,minimax-m3,auto").split(",") if m.strip()),
         ggnarrator_url=os.environ.get("GGNARRATOR_URL", "").rstrip("/"),
         voz=os.environ.get("MORTLINE_VOZ", "Puck"),
         pixabay_key=_clave("PIXABAY_API_KEY"),
