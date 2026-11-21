@@ -60,7 +60,43 @@ CTAS = {
         "placa": "Guardalo y seguime",
     },
 }
+CTAS["producto"] = {
+    "voz": 'invitá a conseguir la planilla en la tienda de mortups.com.ar (el link está en el perfil)',
+    "placa": "Conseguila en la tienda",
+}
 ROTACION = ["whatsapp", "comentario", "whatsapp", "guardar"]
+
+PRODUCTO = """Este reel vende UN producto digital de la tienda de mortups (no los servicios de web):
+Nombre: {nombre}
+Qué es: {resumen}
+Para quién: {para}
+Qué incluye:
+{incluye}
+Precio: {precio}, pago único (en este reel SÍ podés decir el precio exacto).
+Formato: planilla para Excel y Google Sheets, se compra por WhatsApp y te ayudan a dejarla andando.
+
+Reglas extra para este reel:
+- El gancho (primera escena) es el problema concreto que resuelve, como lo vive el dueño, en una pregunta
+  o una frase que duela ("¿Cobrás en cuotas y no sabés cuánto te queda?"). Nunca empieces explicando la planilla.
+- Mostrá 2 o 3 cosas puntuales que hace la planilla (de la lista de qué incluye), con ejemplos concretos.
+- Exactamente 2 escenas tienen "buscar": "CAPTURA" (ahí se ve la planilla de verdad en pantalla):
+  usalas cuando la frase habla de lo que muestra o calcula la planilla. El resto, búsquedas de stock del rubro.
+- La primera y la última escena NUNCA son "CAPTURA" (arrancan y cierran con imagen real del rubro)."""
+
+CIERRES_PRODUCTO = ["La conseguís en la tienda de mortups... el link está en el perfil.",
+                    "Está en la tienda de mortups, con el link en el perfil.",
+                    "Pedila en la tienda de mortups... link en el perfil."]
+
+
+def datos_producto(cfg: Config, slug: str) -> dict:
+    import json
+
+    prods = json.loads(cfg.productos.read_text(encoding="utf-8"))
+    for p in prods["productos"]:
+        if p["slug"] == slug:
+            p["_rubro_txt"] = prods["rubros"].get(p["rubro"], p["rubro"])
+            return p
+    raise ValueError(f"No existe el producto «{slug}». Opciones: " + ", ".join(p["slug"] for p in prods["productos"]))
 
 
 def elegir_cta(hist: Historial) -> str:
@@ -89,7 +125,8 @@ Reglas del guion (pensadas para el algoritmo de Reels/TikTok/Shorts: que lo vean
   algo concreto y filmable que acompañe la frase (ej: "hardware store shelves", "phone whatsapp chat",
   "cashier counter shop"). Nada abstracto ("success", "growth"). Variá las búsquedas entre escenas.
   Al menos la mitad de las escenas tienen que mostrar el rubro mismo: el local, el dueño o el empleado
-  trabajando (ej. barbería: "barber shop", "barber cutting hair"; ferretería: "hardware store", "tools shelf").
+  trabajando (ej. barbería: "barber shop", "barber cutting hair"; ferretería: "tools shop", "tools shelf", "screws bolts"
+  — nunca "hardware", que trae computadoras).
 - "caption": 1 a 3 frases con voseo que incluyan las palabras que un dueño buscaría
   (ej: "catálogo web para ferretería", "vender por WhatsApp"), y una línea final que invite a
   mandárselo a alguien que tenga ese tipo de negocio.
@@ -108,6 +145,7 @@ Revisalo y devolvé el MISMO formato JSON corregido:
 - Que el gancho sea específico del rubro y genere curiosidad (no genérico).
 - Que suene hablado, natural, como lo diría un mendocino de 25 años, no leído.
 - Que cada "buscar" sea concreto, filmable y en inglés, de 2 o 3 palabras comunes (ej: "hardware store", "cashier counter").
+- Si una escena tiene "buscar": "CAPTURA", dejala exactamente así (ahí va la captura de la planilla).
 - Que la última escena mantenga el MISMO llamado que trae el guion (no lo cambies por otro).
 - Que todo tenga sentido lógico y sea coherente entre escenas (horarios, situaciones reales del rubro).
 - Que el "titulo" use palabras reales y comunes, y que se entienda solo.
@@ -147,10 +185,17 @@ def contar_palabras(datos: dict) -> int:
     return sum(len(re.findall(r"\w+", e["texto"])) for e in datos["escenas"])
 
 
-def escribir(cfg: Config, hist: Historial, tema: str | None = None, rubro: str | None = None) -> dict:
+def escribir(cfg: Config, hist: Historial, tema: str | None = None, rubro: str | None = None,
+             producto: str | None = None) -> dict:
     brief = cfg.marca.read_text(encoding="utf-8")
     combo = None
-    if tema:
+    if producto:
+        p = datos_producto(cfg, producto)
+        precio = "$" + f"{p['precio']:,}".replace(",", ".") if p.get("precio") else "a consultar"
+        pedido = PRODUCTO.format(nombre=p["nombre"], resumen=p["resumen"], para=p["_rubro_txt"],
+                                 incluye="\n".join("- " + x for x in p.get("incluye", [])), precio=precio)
+        combo = f"producto/{producto}"
+    elif tema:
         pedido = f"Tema del reel: {tema}"
     else:
         r, s, f = elegir_combo(hist, rubro)
@@ -158,7 +203,7 @@ def escribir(cfg: Config, hist: Historial, tema: str | None = None, rubro: str |
         pedido = (
             f"Rubro: {RUBROS[r]}.\nQué mostrar: {SERVICIOS[s]}.\nEnfoque: {FORMATOS[f]}"
         )
-    cta = elegir_cta(hist)
+    cta = "producto" if producto else elegir_cta(hist)
     pedido += f"\nLlamado final (última escena): {CTAS[cta]['voz']}."
     previos = hist.ganchos(30)
     if previos:
@@ -179,6 +224,22 @@ def escribir(cfg: Config, hist: Historial, tema: str | None = None, rubro: str |
             temperature=0.4,
         )
     _validar(datos)
+    if producto:
+        # Cierre fijo y coherente con la placa; capturas nunca en la primera ni en la última escena.
+        datos["escenas"][-1]["texto"] = CIERRES_PRODUCTO[len(hist.reels) % len(CIERRES_PRODUCTO)]
+        for e in (datos["escenas"][0], datos["escenas"][-1]):
+            if e["buscar"].strip().upper() == "CAPTURA":
+                e["buscar"] = "store owner smiling"
+        # Siempre 2 escenas con la planilla real (las del medio), aunque el modelo ponga menos.
+        medio = list(range(1, len(datos["escenas"]) - 1))
+        con = [i for i in medio if datos["escenas"][i]["buscar"].strip().upper() == "CAPTURA"]
+        for i in medio:
+            if len(con) >= 2:
+                break
+            if i not in con:
+                datos["escenas"][i]["buscar"] = "CAPTURA"
+                con.append(i)
+        datos["gancho"] = datos["escenas"][0]["texto"]
     datos["combo"] = combo
     datos["cta"] = cta
     return datos

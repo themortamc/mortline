@@ -38,6 +38,8 @@ class Config:
     musica: Path
     datos: Path
     assets: Path
+    productos: Path
+    capturas: Path
 
 
 def _clave(nombre: str) -> str:
@@ -72,4 +74,6 @@ def cargar() -> Config:
         musica=ROOT / "music",
         datos=ROOT / "data",
         assets=ROOT / "assets",
+        productos=Path(os.environ.get("MORTLINE_PRODUCTOS", "~/repos/mortups/tools/productos.json")).expanduser(),
+        capturas=Path(os.environ.get("MORTLINE_CAPTURAS", "~/Downloads/job/productos-mortups/capturas")).expanduser(),
     )

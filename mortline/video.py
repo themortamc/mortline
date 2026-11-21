@@ -57,6 +57,16 @@ def _movimiento(frames: int, n: int) -> str:
 
 def _toma(m: Material, inicio: float, dur: float, destino: Path, n: int = 0) -> None:
     frames = max(int(dur * FPS), 1)
+    if m.estilo == "captura":
+        # Planilla real: alta 720 px (legible en el celular), sobre fondo de marca. Si es más ancha
+        # que la pantalla, paneo lento de izquierda a derecha para recorrerla.
+        alto, y = 720, 400
+        filtro = (f"[1:v]scale=-2:{alto},setsar=1[s];"
+                  f"[0:v][s]overlay=x='if(gt(overlay_w,1040),20-(overlay_w-1040)*t/{dur:.3f},(main_w-overlay_w)/2)'"
+                  f":y={y}:eval=frame,fps={FPS},format=yuv420p[v]")
+        _ff(["-f", "lavfi", "-i", f"color=c=0x140B24:s={W}x{H}:d={dur:.3f}:r={FPS}", "-loop", "1", "-t", f"{dur:.3f}",
+             "-i", str(m.path), "-filter_complex", filtro, "-map", "[v]", "-frames:v", str(frames), *X264, str(destino)])
+        return
     if m.es_video:
         total = duracion(m.path)
         loop = ["-stream_loop", "-1"] if total < inicio + dur else []

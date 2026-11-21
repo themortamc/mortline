@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -19,6 +20,7 @@ class Material:
     path: Path
     es_video: bool
     credito: str
+    estilo: str = ""  # "captura": planilla real, se muestra grande con paneo
 
 
 def _bajar(url: str, destino: Path) -> Path:
@@ -110,6 +112,9 @@ def _openverse(q: str) -> list[dict]:
         w, h = i.get("width") or 0, i.get("height") or 0
         if i["id"] in vistos or (min(w, h) and (max(w, h) < 900 or max(w, h) > 8000)):
             continue
+        texto = f"{i.get('title', '')} {i.get('foreign_landing_url', '')}".lower()
+        if re.search(r"vintage|illustrat|drawing|engrav|painting|poster|artwork|antique|lithograph|\bart\b", texto):
+            continue  # arte antiguo o ilustraciones: no sirven para un reel de comercios de hoy
         vistos.add(i["id"])
         out.append({
             "id": f"openverse:{i['id']}", "url": i["url"], "w": w, "h": h, "dur": 0,
@@ -136,7 +141,12 @@ def buscar(cfg: Config, consulta: str, cantidad: int, segundos: float, evitar: s
     """Devuelve `cantidad` materiales distintos para la consulta (prefiere verticales y largos)."""
     cache.mkdir(parents=True, exist_ok=True)
     fuentes = {"pixabay": _pixabay, "pexels": _pexels, "openverse": lambda _cfg, q: _openverse(q)}
+    adjetivos = {"small", "big", "young", "old", "happy", "busy", "close", "closeup", "modern", "local",
+                 "local", "female", "male", "smiling", "a", "an", "the", "top", "view", "slow", "motion"}
     palabras = consulta.lower().split()
+    # El sujeto es la primera palabra que no es un adjetivo ("small business owner" → business).
+    while len(palabras) > 1 and palabras[0] in adjetivos:
+        palabras = palabras[1:]
     # La primera palabra es el sujeto que tiene que verse ("barber cutting hair" → barber).
     # Si la búsqueda completa no trae nada, se va achicando sin perder el sujeto.
     consultas = list(dict.fromkeys([" ".join(palabras), " ".join(palabras[:2]), palabras[0]]))
@@ -148,10 +158,18 @@ def buscar(cfg: Config, consulta: str, cantidad: int, segundos: float, evitar: s
     def _tags(c: dict) -> set[str]:
         return {_raiz(t) for t in c.get("tags", "").replace(",", " ").lower().split()}
 
+    lugares = {"store", "shop", "market", "kitchen", "restaurant", "office", "salon", "garage", "workshop",
+               "pharmacy", "clinic", "gym", "warehouse", "bakery", "cafe", "bar", "supermarket"}
+
     def muestra_lo_pedido(c: dict, q: str) -> bool:
-        # Videos con etiquetas: tienen que incluir el sustantivo de la búsqueda.
-        # Así "barber writing on paper" no trae un libro con flores.
-        return "tags" not in c or _raiz(q.split()[0]) in _tags(c)
+        # Videos con etiquetas: tienen que incluir el sujeto de la búsqueda (primera palabra) y, si nombra
+        # un lugar, también el lugar. Así "barber writing on paper" no trae un libro con flores y
+        # "hardware store" no trae un disco rígido.
+        if "tags" not in c:
+            return True
+        tags = _tags(c)
+        pedidas = {q.split()[0]} | {w for w in palabras if w in lugares}
+        return all(_raiz(w) in tags for w in pedidas)
 
     candidatos: list[dict] = []
     for prov in proveedores(cfg):
@@ -193,3 +211,9 @@ def buscar(cfg: Config, consulta: str, cantidad: int, segundos: float, evitar: s
             continue
         elegidos.append(Material(c["id"], p, es_video, c["credito"]))
     return elegidos
+
+
+def capturas(cfg: Config, slug: str, trabajo: Path) -> list[Material]:
+    """Capturas reales de la planilla (las arma productos-mortups/capturas.py)."""
+    return [Material(f"captura:{png.stem}", png, False, "Captura de la planilla de mortups", "captura")
+            for png in sorted(cfg.capturas.glob(f"{slug}-*.png"))]

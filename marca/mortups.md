@@ -37,6 +37,7 @@ talleres mecánicos, gimnasios, clínicas y distribuidoras. Lo ven en el celular
 ## Palabras que NO se usan (no son rioplatenses o suenan raro)
 "la neta", "chido", "padre" (por bueno), "platicar", "ahorita", "celular" está bien pero no "móvil",
 "ordenador", "vosotros", "coger", "guay", "chévere", "bacán", "bolilla", "socio" (si no es socio de verdad).
+Voseo siempre, nunca tuteo: "te perdés", "tenés", "podés", "sabés" (nunca "te pierdes", "tienes", "puedes", "sabes").
 Nada de palabras inventadas. Si una expresión no la diría un comerciante de Mendoza, cambiala.
 
 ## Voz

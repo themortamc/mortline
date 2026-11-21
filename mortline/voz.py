@@ -26,7 +26,7 @@ def generar(cfg: Config, texto: str, destino: Path, voz: str | None = None) -> f
     if not cfg.ggnarrator_url:
         raise VozError("Falta GGNARRATOR_URL en el .env.")
     ultimo = ""
-    for intento in range(3):
+    for intento in range(6):
         try:
             r = requests.post(
                 f"{cfg.ggnarrator_url}/api/tts/generate",
@@ -38,6 +38,11 @@ def generar(cfg: Config, texto: str, destino: Path, voz: str | None = None) -> f
                 destino.write_bytes(base64.b64decode(datos["audioBase64"]))
                 return float(datos.get("durationSeconds") or 0)
             ultimo = f"HTTP {r.status_code}: {r.text[:300]}"
+            if r.status_code == 429:
+                # Límite de Gemini TTS: esperar y reintentar (20 s, 40 s, 60 s...).
+                print(f"   GGNarrator está al límite de pedidos; espero {20 * (intento + 1)} s…", flush=True)
+                time.sleep(20 * (intento + 1))
+                continue
         except requests.RequestException as exc:
             ultimo = str(exc)
         time.sleep(5 * (intento + 1))

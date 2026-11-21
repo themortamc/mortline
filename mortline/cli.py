@@ -47,22 +47,33 @@ def _recortar_silencio(entrada: Path, salida: Path) -> None:
 
 
 def hacer_reel(cfg: Config, hist: Historial, tema: str | None, rubro: str | None,
-               voz_nombre: str | None, con_musica: bool) -> Path:
+               voz_nombre: str | None, con_musica: bool, producto: str | None = None) -> Path:
     t0 = time.time()
     _paso(1, "Escribiendo el guion con FreeLLMAPI…")
-    datos = guion.escribir(cfg, hist, tema=tema, rubro=rubro)
+    datos = guion.escribir(cfg, hist, tema=tema, rubro=rubro, producto=producto)
     print(f"   Tema: {datos['tema']}\n   Gancho: {datos['gancho']}\n   Llamado: {datos['cta']}")
 
     carpeta = cfg.salida / f"{datetime.now():%Y-%m-%d_%H%M}_{_slug(datos['tema'])}"
+    try:
+        return _armar(cfg, hist, datos, carpeta, voz_nombre, con_musica, producto, t0)
+    except BaseException:
+        shutil.rmtree(carpeta, ignore_errors=True)  # no dejar reels a medio hacer
+        raise
+
+
+def _armar(cfg, hist, datos, carpeta, voz_nombre, con_musica, producto, t0, rehacer=False) -> Path:
     trabajo = carpeta / ".trabajo"
     trabajo.mkdir(parents=True, exist_ok=True)
     (carpeta / "guion.json").write_text(json.dumps(datos, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    _paso(2, f"Grabando la voz con GGNarrator ({voz_nombre or cfg.voz})…")
-    crudo = trabajo / "voz_cruda.wav"
-    voz.generar(cfg, guion.texto_locucion(datos), crudo, voz_nombre)
     audio = carpeta / "voz.wav"
-    _recortar_silencio(crudo, audio)
+    if rehacer and audio.exists():
+        _paso(2, "Reutilizo la voz que ya estaba grabada…")
+    else:
+        _paso(2, f"Grabando la voz con GGNarrator ({voz_nombre or cfg.voz})…")
+        crudo = trabajo / "voz_cruda.wav"
+        voz.generar(cfg, guion.texto_locucion(datos), crudo, voz_nombre)
+        _recortar_silencio(crudo, audio)
     dur_voz = video.duracion(audio)
     print(f"   {dur_voz:.1f} s de locución")
 
@@ -74,8 +85,19 @@ def hacer_reel(cfg: Config, hist: Historial, tema: str | None, rubro: str | None
     _paso(4, f"Buscando clips libres en {clips.proveedor(cfg)}…")
     usados = hist.clips_usados()
     materiales, creditos = [], []
+    caps = clips.capturas(cfg, producto, trabajo / "capturas") if producto else []
+    n_cap = 0
     for (ini, fin), escena in zip(tramos, datos["escenas"]):
         n = video.tomas_por_escena(fin - ini)
+        if escena["buscar"].strip().upper() == "CAPTURA" and caps:
+            mats = [caps[(n_cap + j) % len(caps)] for j in range(min(n, len(caps)))]
+            n_cap += 1
+            materiales.append(mats)
+            creditos += [m.credito for m in mats]
+            print(f"   «captura de la planilla»: {len(mats)} imagen(es)")
+            continue
+        if escena["buscar"].strip().upper() == "CAPTURA":
+            escena["buscar"] = "small business owner laptop"
         mats = clips.buscar(cfg, escena["buscar"], n, (fin - ini) / n + 1, usados, trabajo / "clips")
         if not mats:
             mats = clips.buscar(cfg, "small business shop", n, 3, usados, trabajo / "clips")
@@ -109,6 +131,9 @@ def hacer_reel(cfg: Config, hist: Historial, tema: str | None, rubro: str | None
         creditos.append(f"Música: {tema_musical.name}")
     (carpeta / "creditos.txt").write_text("\n".join(dict.fromkeys(creditos)) + "\n", encoding="utf-8")
     shutil.rmtree(trabajo, ignore_errors=True)
+    if rehacer:
+        print(f"\n✅ Rehecho en {time.time() - t0:.0f} s\n   {reel}")
+        return reel
     hist.agregar({
         "combo": datos.get("combo"), "tema": datos["tema"], "gancho": datos["gancho"],
         "titulo": datos.get("titulo", ""), "cta": datos["cta"], "voz": voz_nombre or cfg.voz,
@@ -152,10 +177,20 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--voz", choices=["Puck", "Fenrir", "Charon", "Kore", "Zephyr"], help="voz de GGNarrator")
     ap.add_argument("--cantidad", type=int, default=1, help="cuántos reels hacer seguidos")
     ap.add_argument("--sin-musica", action="store_true", help="sin música de fondo")
+    ap.add_argument("--rehacer", help="carpeta de un reel ya hecho: rehace imágenes y video con la misma voz y guion")
+    ap.add_argument("--producto", help="reel de un producto digital de la tienda (slug, ej: calculadora-de-precios)")
     args = ap.parse_args(argv)
 
     cfg = cargar()
     hist = Historial(cfg.datos)
+    if args.rehacer:
+        carpeta = Path(args.rehacer).expanduser().resolve()
+        datos = json.loads((carpeta / "guion.json").read_text(encoding="utf-8"))
+        datos.setdefault("cta", "whatsapp")
+        datos.setdefault("gancho", datos["escenas"][0]["texto"])
+        producto = (datos.get("combo") or "").removeprefix("producto/") if str(datos.get("combo", "")).startswith("producto/") else None
+        _armar(cfg, hist, datos, carpeta, args.voz, not args.sin_musica, producto, time.time(), rehacer=True)
+        return 0
     if args.tema == "historial":
         _historial(hist)
         return 0
@@ -164,7 +199,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.cantidad > 1:
             print(f"\n━━━ Reel {i + 1} de {args.cantidad} ━━━")
         try:
-            hacer_reel(cfg, hist, args.tema, args.rubro, args.voz, not args.sin_musica)
+            hacer_reel(cfg, hist, args.tema, args.rubro, args.voz, not args.sin_musica, args.producto)
         except Exception as exc:  # seguir con el próximo si se hace una tanda
             errores += 1
             print(f"\n❌ {exc}", file=sys.stderr)
