@@ -152,11 +152,16 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             "Dialogue: 1,0:00:00.00," + _t(min(3.0, hasta)) + r",Titulo,,0,0,0,,{\fad(0,200)}" + t
         )
     pos = r"{\an5\pos(540,1180)}"
-    for grupo in _grupos([p for p in palabras if p.inicio < hasta]):
-        fin_grupo = min(grupo[-1].fin + 0.25, hasta)
+    grupos = _grupos([p for p in palabras if p.inicio < hasta])
+    for gi, grupo in enumerate(grupos):
+        # Nunca encimar dos grupos: el grupo termina cuando empieza el siguiente.
+        siguiente = grupos[gi + 1][0].inicio if gi + 1 < len(grupos) else hasta
+        fin_grupo = min(grupo[-1].fin + 0.25, siguiente, hasta)
         for k, p in enumerate(grupo):
             ini = p.inicio if k else grupo[0].inicio
             fin = grupo[k + 1].inicio if k + 1 < len(grupo) else fin_grupo
+            if fin <= ini:
+                continue
             partes = []
             for m, q in enumerate(grupo):
                 txt = _limpio(q.texto)

@@ -51,7 +51,7 @@ def hacer_reel(cfg: Config, hist: Historial, tema: str | None, rubro: str | None
     t0 = time.time()
     _paso(1, "Escribiendo el guion con FreeLLMAPI…")
     datos = guion.escribir(cfg, hist, tema=tema, rubro=rubro)
-    print(f"   Tema: {datos['tema']}\n   Gancho: {datos['gancho']}")
+    print(f"   Tema: {datos['tema']}\n   Gancho: {datos['gancho']}\n   Llamado: {datos['cta']}")
 
     carpeta = cfg.salida / f"{datetime.now():%Y-%m-%d_%H%M}_{_slug(datos['tema'])}"
     trabajo = carpeta / ".trabajo"
@@ -97,7 +97,7 @@ def hacer_reel(cfg: Config, hist: Historial, tema: str | None, rubro: str | None
     reel = carpeta / "reel.mp4"
     total = video.armar(
         tramos=tramos, materiales=materiales, voz=audio, dur_voz=dur_voz, ass=ass,
-        musica=tema_musical, assets=cfg.assets, whatsapp=cfg.whatsapp, web=cfg.web,
+        musica=tema_musical, assets=cfg.assets, llamado=guion.CTAS[datos['cta']]['placa'], web=cfg.web,
         trabajo=trabajo, salida=reel,
     )
 
@@ -111,7 +111,7 @@ def hacer_reel(cfg: Config, hist: Historial, tema: str | None, rubro: str | None
     shutil.rmtree(trabajo, ignore_errors=True)
     hist.agregar({
         "combo": datos.get("combo"), "tema": datos["tema"], "gancho": datos["gancho"],
-        "titulo": datos.get("titulo", ""), "voz": voz_nombre or cfg.voz,
+        "titulo": datos.get("titulo", ""), "cta": datos["cta"], "voz": voz_nombre or cfg.voz,
         "clips": sorted({m.id for ms in materiales for m in ms}), "duracion": total,
         "carpeta": str(carpeta),
     })

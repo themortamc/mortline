@@ -45,13 +45,26 @@ def tomas_por_escena(seg: float) -> int:
     return max(1, round(seg / TOMA))
 
 
-def _toma(m: Material, inicio: float, dur: float, destino: Path) -> None:
-    cubrir = f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},setsar=1"
+ZOOM = 0.07         # zoom lento en cada toma: un poco de movimiento retiene más que una imagen quieta
+
+
+def _movimiento(frames: int, n: int) -> str:
+    """Zoom suave que alterna entre acercar y alejar (se ve hecho a mano, no repetitivo)."""
+    z = f"1+{ZOOM}*on/{frames}" if n % 2 == 0 else f"{1 + ZOOM}-{ZOOM}*on/{frames}"
+    return (f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':"
+            f"d=1:s={W}x{H}:fps={FPS}")
+
+
+def _toma(m: Material, inicio: float, dur: float, destino: Path, n: int = 0) -> None:
+    frames = max(int(dur * FPS), 1)
     if m.es_video:
         total = duracion(m.path)
         loop = ["-stream_loop", "-1"] if total < inicio + dur else []
+        # Se agranda al doble antes del zoom para que el movimiento no "tiemble".
+        vf = (f"fps={FPS},scale={W*2}:{H*2}:force_original_aspect_ratio=increase,crop={W*2}:{H*2},"
+              f"{_movimiento(frames, n)},setsar=1,eq=saturation=1.06")
         _ff([*loop, "-ss", f"{inicio:.2f}", "-t", f"{dur:.3f}", "-i", str(m.path),
-             "-vf", f"{cubrir},fps={FPS},eq=saturation=1.06", "-an", *X264, str(destino)])
+             "-vf", vf, "-an", "-frames:v", str(frames), *X264, str(destino)])
     else:
         frames = max(int(dur * FPS), 1)
         # Ken Burns suave para fotos: zoom lento hacia el centro.
@@ -62,11 +75,12 @@ def _toma(m: Material, inicio: float, dur: float, destino: Path) -> None:
         _ff(["-loop", "1", "-i", str(m.path), "-t", f"{dur:.3f}", "-vf", vf, "-an", *X264, str(destino)])
 
 
-def _placa(assets: Path, dur: float, whatsapp: str, web: str, trabajo: Path, destino: Path) -> None:
+def _placa(assets: Path, dur: float, llamado: str, web: str, trabajo: Path, destino: Path) -> None:
+    """Placa final: logo, la web bien grande y el llamado de este reel (sin teléfono)."""
     logo = assets / "logo.jpg"
     fuerte = assets / "fonts" / "HankenGrotesk-ExtraBold.ttf"
     media = assets / "fonts" / "HankenGrotesk-SemiBold.ttf"
-    textos = {"t1.txt": "Escribime por WhatsApp", "t2.txt": whatsapp, "t3.txt": web}
+    textos = {"t1.txt": llamado, "t2.txt": web, "t3.txt": "Link en el perfil"}
     for nombre, t in textos.items():
         (trabajo / nombre).write_text(t, encoding="utf-8")
     fade = f"fade=t=in:st=0:d=0.35"
@@ -75,8 +89,7 @@ def _placa(assets: Path, dur: float, whatsapp: str, web: str, trabajo: Path, des
         f"[1:v]scale=860:860[logo];"
         f"[fondo][logo]overlay=(W-w)/2:330,"
         f"drawtext=fontfile='{media}':textfile='{trabajo/'t1.txt'}':fontcolor=white:fontsize=64:x=(w-tw)/2:y=1260,"
-        f"drawtext=fontfile='{fuerte}':textfile='{trabajo/'t2.txt'}':fontcolor=0x8B2CFF:fontsize=86:x=(w-tw)/2:y=1360:"
-        f"borderw=3:bordercolor=white@0.0,"
+        f"drawtext=fontfile='{fuerte}':textfile='{trabajo/'t2.txt'}':fontcolor=0x8B2CFF:fontsize=96:x=(w-tw)/2:y=1355,"
         f"drawtext=fontfile='{media}':textfile='{trabajo/'t3.txt'}':fontcolor=white@0.85:fontsize=52:x=(w-tw)/2:y=1500,"
         f"fps={FPS},setsar=1,{fade}[v]"
     )
@@ -85,7 +98,7 @@ def _placa(assets: Path, dur: float, whatsapp: str, web: str, trabajo: Path, des
 
 
 def armar(*, tramos: list[tuple[float, float]], materiales: list[list[Material]], voz: Path,
-          dur_voz: float, ass: Path, musica: Path | None, assets: Path, whatsapp: str, web: str,
+          dur_voz: float, ass: Path, musica: Path | None, assets: Path, llamado: str, web: str,
           trabajo: Path, salida: Path) -> float:
     """Devuelve la duración final. `tramos[-1]` es la escena del llamado: ahí entra la placa."""
     if not shutil.which("ffmpeg"):
@@ -107,11 +120,11 @@ def armar(*, tramos: list[tuple[float, float]], materiales: list[list[Material]]
             # Si se repite el mismo clip dentro de la escena, usar otro tramo del video.
             offset = (j // len(mats)) * 4.0 + 0.3
             destino = trabajo / f"toma_{n:03d}.mp4"
-            _toma(m, offset, paso, destino)
+            _toma(m, offset, paso, destino, n)
             partes.append(destino)
             n += 1
     placa = trabajo / "placa.mp4"
-    _placa(assets, total - inicio_placa, whatsapp, web, trabajo, placa)
+    _placa(assets, total - inicio_placa, llamado, web, trabajo, placa)
     partes.append(placa)
 
     lista = trabajo / "lista.txt"

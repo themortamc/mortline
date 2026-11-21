@@ -46,4 +46,5 @@ Nada de palabras inventadas. Si una expresión no la diría un comerciante de Me
   el cliente que pregunta "¿tenés tal cosa?" diez veces por día).
 - Ojo con quién recibe qué: el pedido le llega AL DUEÑO ("te llega a tu WhatsApp"), no a Lautaro.
   Lautaro es quien arma el sistema ("te lo armo", "te armo la demo").
-- Cierre siempre con llamado a escribir por WhatsApp (el link está en el perfil).
+- Un solo llamado al final (escribir por WhatsApp, comentar DEMO o guardar el reel, según se pida).
+- Nunca digas números de teléfono en el guion.

@@ -137,8 +137,9 @@ def buscar(cfg: Config, consulta: str, cantidad: int, segundos: float, evitar: s
     cache.mkdir(parents=True, exist_ok=True)
     fuentes = {"pixabay": _pixabay, "pexels": _pexels, "openverse": lambda _cfg, q: _openverse(q)}
     palabras = consulta.lower().split()
-    # El sustantivo principal suele ser la última palabra ("busy kitchen" → kitchen).
-    consultas = list(dict.fromkeys([" ".join(palabras), " ".join(palabras[-2:]), palabras[-1]]))
+    # La primera palabra es el sujeto que tiene que verse ("barber cutting hair" → barber).
+    # Si la búsqueda completa no trae nada, se va achicando sin perder el sujeto.
+    consultas = list(dict.fromkeys([" ".join(palabras), " ".join(palabras[:2]), palabras[0]]))
     claves = {w for w in palabras if len(w) > 2}
 
     def _raiz(w: str) -> str:
@@ -149,8 +150,8 @@ def buscar(cfg: Config, consulta: str, cantidad: int, segundos: float, evitar: s
 
     def muestra_lo_pedido(c: dict, q: str) -> bool:
         # Videos con etiquetas: tienen que incluir el sustantivo de la búsqueda.
-        # Así "busy kitchen" no trae un colectivo "busy" de Londres.
-        return "tags" not in c or _raiz(q.split()[-1]) in _tags(c)
+        # Así "barber writing on paper" no trae un libro con flores.
+        return "tags" not in c or _raiz(q.split()[0]) in _tags(c)
 
     candidatos: list[dict] = []
     for prov in proveedores(cfg):

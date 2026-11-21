@@ -31,7 +31,6 @@ class Config:
     voz: str
     pixabay_key: str
     pexels_key: str
-    whatsapp: str
     web: str
     salida: Path
     whisper_modelo: str
@@ -66,7 +65,6 @@ def cargar() -> Config:
         voz=os.environ.get("MORTLINE_VOZ", "Puck"),
         pixabay_key=_clave("PIXABAY_API_KEY"),
         pexels_key=_clave("PEXELS_API_KEY"),
-        whatsapp=os.environ.get("MORTLINE_WHATSAPP", "+54 9 2634 279451"),
         web=os.environ.get("MORTLINE_WEB", "mortups.com.ar"),
         salida=Path(os.environ.get("MORTLINE_SALIDA", "~/Videos/mortline")).expanduser(),
         whisper_modelo=os.environ.get("MORTLINE_WHISPER", "small"),

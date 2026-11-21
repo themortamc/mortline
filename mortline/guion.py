@@ -44,6 +44,29 @@ FORMATOS = {
     "tip": "Dá un consejo útil y accionable para el rubro, y recién al final mencioná mortups.",
 }
 
+# Un solo llamado por reel, rotando (la investigación: un CTA por reel; los comentarios también
+# empujan la distribución; los "guardar" suman en contenido útil). WhatsApp va el doble de seguido.
+CTAS = {
+    "whatsapp": {
+        "voz": 'invitá a escribir por WhatsApp para pedir la demo gratis (el link está en el perfil)',
+        "placa": "Pedí tu demo gratis por WhatsApp",
+    },
+    "comentario": {
+        "voz": 'pedí que comenten la palabra DEMO y que Lautaro le escribe para armarle la suya',
+        "placa": "Comentá DEMO y te escribo",
+    },
+    "guardar": {
+        "voz": 'pedí que lo guarden para tenerlo a mano y que sigan la cuenta para más consejos así',
+        "placa": "Guardalo y seguime",
+    },
+}
+ROTACION = ["whatsapp", "comentario", "whatsapp", "guardar"]
+
+
+def elegir_cta(hist: Historial) -> str:
+    return ROTACION[len(hist.reels) % len(ROTACION)]
+
+
 SISTEMA = """Sos guionista de reels verticales de 20 a 30 segundos para Instagram y TikTok.
 Escribís para la marca descripta en el brief y respetás TODAS sus reglas.
 
@@ -55,14 +78,18 @@ Reglas del guion (pensadas para el algoritmo de Reels/TikTok/Shorts: que lo vean
   identificación inmediata ("me pasa"). Nada de saludos ni presentaciones ("Hola, soy...").
 - 4 a 6 escenas. Cada escena es 1 o 2 frases cortas. Cada escena aporta algo nuevo: no rellenes.
 - Tiene que ser útil o muy identificable, algo que el dueño quiera mandarle a otro comerciante.
-- La última escena es el llamado: escribir por WhatsApp (el link está en el perfil). Corta y firme.
+- La última escena es el llamado que se indica en el pedido (uno solo). Corta y firme.
 - Usá "..." para marcar una pausa natural de respiración (máximo 3 en todo el guion).
 - Escribí los números como se dicen ("24 a 72 horas" está bien).
 - "titulo": texto que se ve arriba en pantalla los primeros 3 segundos, máximo 6 palabras.
   Complementa el gancho hablado (no lo repite palabra por palabra) y nombra el rubro o el problema.
-- "buscar" es una búsqueda EN INGLÉS de 2 palabras (máximo 3) para un banco de videos de stock:
+- "buscar" es una búsqueda EN INGLÉS de 2 o 3 palabras para un banco de videos de stock.
+  La PRIMERA palabra es siempre el sujeto o lugar que tiene que verse (barber, kitchen, cashier, mechanic,
+  phone, store), y después el detalle: "barber cutting hair", "kitchen chef cooking", "phone typing message".
   algo concreto y filmable que acompañe la frase (ej: "hardware store shelves", "phone whatsapp chat",
   "cashier counter shop"). Nada abstracto ("success", "growth"). Variá las búsquedas entre escenas.
+  Al menos la mitad de las escenas tienen que mostrar el rubro mismo: el local, el dueño o el empleado
+  trabajando (ej. barbería: "barber shop", "barber cutting hair"; ferretería: "hardware store", "tools shelf").
 - "caption": 1 a 3 frases con voseo que incluyan las palabras que un dueño buscaría
   (ej: "catálogo web para ferretería", "vender por WhatsApp"), y una línea final que invite a
   mandárselo a alguien que tenga ese tipo de negocio.
@@ -81,8 +108,11 @@ Revisalo y devolvé el MISMO formato JSON corregido:
 - Que el gancho sea específico del rubro y genere curiosidad (no genérico).
 - Que suene hablado, natural, como lo diría un mendocino de 25 años, no leído.
 - Que cada "buscar" sea concreto, filmable y en inglés, de 2 o 3 palabras comunes (ej: "hardware store", "cashier counter").
+- Que la última escena mantenga el MISMO llamado que trae el guion (no lo cambies por otro).
 - Que todo tenga sentido lógico y sea coherente entre escenas (horarios, situaciones reales del rubro).
 - Que el "titulo" use palabras reales y comunes, y que se entienda solo.
+- Datos exactos del brief, sin redondear ni inventar: la demo es "en 24 a 72 horas" (nunca otro plazo).
+- Nada de palabras en inglés en el guion, el título ni el caption (no: "ads", "leads"; sí se puede: marketing, WhatsApp, QR).
 - Ortografía perfecta con tildes (pizzería, catálogo, también, está).
 - Que no haya palabras de otros países (ver la lista de palabras que NO se usan) ni errores de ortografía,
   tampoco en los hashtags.
@@ -128,6 +158,8 @@ def escribir(cfg: Config, hist: Historial, tema: str | None = None, rubro: str |
         pedido = (
             f"Rubro: {RUBROS[r]}.\nQué mostrar: {SERVICIOS[s]}.\nEnfoque: {FORMATOS[f]}"
         )
+    cta = elegir_cta(hist)
+    pedido += f"\nLlamado final (última escena): {CTAS[cta]['voz']}."
     previos = hist.ganchos(30)
     if previos:
         pedido += "\n\nGanchos ya usados (no repitas ni parafrasees ninguno):\n- " + "\n- ".join(previos)
@@ -148,6 +180,7 @@ def escribir(cfg: Config, hist: Historial, tema: str | None = None, rubro: str |
         )
     _validar(datos)
     datos["combo"] = combo
+    datos["cta"] = cta
     return datos
 
 
