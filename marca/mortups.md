@@ -44,4 +44,6 @@ Nada de palabras inventadas. Si una expresión no la diría un comerciante de Me
 - Como si le hablara a un comerciante conocido en el mostrador.
 - Frases cortas. Palabras concretas del rubro (el changuito, el mostrador, el talonario, la lista de precios en Excel,
   el cliente que pregunta "¿tenés tal cosa?" diez veces por día).
+- Ojo con quién recibe qué: el pedido le llega AL DUEÑO ("te llega a tu WhatsApp"), no a Lautaro.
+  Lautaro es quien arma el sistema ("te lo armo", "te armo la demo").
 - Cierre siempre con llamado a escribir por WhatsApp (el link está en el perfil).

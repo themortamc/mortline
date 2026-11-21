@@ -37,20 +37,23 @@ def _bajar(url: str, destino: Path) -> Path:
 def _pixabay(cfg: Config, q: str) -> list[dict]:
     r = requests.get(
         "https://pixabay.com/api/videos/",
-        params={"key": cfg.pixabay_key, "q": q[:100], "per_page": 30, "safesearch": "true"},
+        params={"key": cfg.pixabay_key, "q": q[:100], "per_page": 30, "safesearch": "true",
+                "video_type": "film"},
         timeout=30,
     )
     r.raise_for_status()
     out = []
     for h in r.json().get("hits", []):
-        v = h["videos"].get("large") or {}
-        if not v.get("url") or v.get("width", 0) < 1000:
-            v = h["videos"].get("medium") or {}
-        if not v.get("url"):
+        # El reel es 1080×1920: alcanza con ~1080p. "large" suele ser 4K (100-200 MB por clip).
+        tamanios = [h["videos"].get(k) or {} for k in ("medium", "large", "small")]
+        tamanios = [t for t in tamanios if t.get("url") and min(t.get("width", 0), t.get("height", 0)) >= 720]
+        if not tamanios:
             continue
+        v = min(tamanios, key=lambda t: abs(min(t["width"], t["height"]) - 1080))
         out.append({
             "id": f"pixabay:{h['id']}", "url": v["url"], "w": v["width"], "h": v["height"],
-            "dur": h.get("duration", 0), "credito": f"Pixabay · {h.get('user', '')} · {h.get('pageURL', '')}",
+            "dur": h.get("duration", 0), "tags": h.get("tags", ""),
+            "credito": f"Pixabay · {h.get('user', '')} · {h.get('pageURL', '')}",
         })
     return out
 
@@ -133,8 +136,22 @@ def buscar(cfg: Config, consulta: str, cantidad: int, segundos: float, evitar: s
     """Devuelve `cantidad` materiales distintos para la consulta (prefiere verticales y largos)."""
     cache.mkdir(parents=True, exist_ok=True)
     fuentes = {"pixabay": _pixabay, "pexels": _pexels, "openverse": lambda _cfg, q: _openverse(q)}
-    palabras = consulta.split()
-    consultas = list(dict.fromkeys([consulta, " ".join(palabras[-2:]), " ".join(palabras[:2]), palabras[-1]]))
+    palabras = consulta.lower().split()
+    # El sustantivo principal suele ser la última palabra ("busy kitchen" → kitchen).
+    consultas = list(dict.fromkeys([" ".join(palabras), " ".join(palabras[-2:]), palabras[-1]]))
+    claves = {w for w in palabras if len(w) > 2}
+
+    def _raiz(w: str) -> str:
+        return w[:5]
+
+    def _tags(c: dict) -> set[str]:
+        return {_raiz(t) for t in c.get("tags", "").replace(",", " ").lower().split()}
+
+    def muestra_lo_pedido(c: dict, q: str) -> bool:
+        # Videos con etiquetas: tienen que incluir el sustantivo de la búsqueda.
+        # Así "busy kitchen" no trae un colectivo "busy" de Londres.
+        return "tags" not in c or _raiz(q.split()[-1]) in _tags(c)
+
     candidatos: list[dict] = []
     for prov in proveedores(cfg):
         for q in consultas:
@@ -147,16 +164,19 @@ def buscar(cfg: Config, consulta: str, cantidad: int, segundos: float, evitar: s
             except requests.RequestException:
                 continue
             vistos = {x["id"] for x in candidatos}
-            candidatos += [dict(c, prov=prov) for c in res if c["id"] not in evitar and c["id"] not in vistos]
+            candidatos += [dict(c, prov=prov) for c in res
+                           if c["id"] not in evitar and c["id"] not in vistos and muestra_lo_pedido(c, q)]
             if len(candidatos) >= cantidad * 2:
                 break
         if candidatos:
             break
 
     def puntaje(c):
+        # Lo que más importa es que el clip muestre lo que dice la frase (tags del banco).
+        relevancia = 3 * len({_raiz(w) for w in claves} & _tags(c))
         vertical = 2 if c["h"] > c["w"] else 0
         alcanza = 1 if (c["dur"] == 0 or c["dur"] >= segundos) else 0
-        return vertical + alcanza
+        return relevancia + vertical + alcanza
 
     candidatos.sort(key=puntaje, reverse=True)
     elegidos: list[Material] = []

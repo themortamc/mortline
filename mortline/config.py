@@ -26,6 +26,7 @@ class Config:
     llm_url: str
     llm_key: str
     llm_model: str
+    llm_modelos: tuple[str, ...]
     ggnarrator_url: str
     voz: str
     pixabay_key: str
@@ -58,6 +59,9 @@ def cargar() -> Config:
         llm_url=os.environ.get("FREELLMAPI_URL", "http://127.0.0.1:31416/v1").rstrip("/"),
         llm_key=key,
         llm_model=os.environ.get("MORTLINE_MODELO", "auto"),
+        # Para escribir se prueban primero modelos fuertes; si no responden, "auto" elige otro.
+        llm_modelos=tuple(m.strip() for m in os.environ.get(
+            "MORTLINE_MODELOS", "gemini-3.8-flash,deepseek-v4-pro,glm-5.3,auto").split(",") if m.strip()),
         ggnarrator_url=os.environ.get("GGNARRATOR_URL", "").rstrip("/"),
         voz=os.environ.get("MORTLINE_VOZ", "Puck"),
         pixabay_key=_clave("PIXABAY_API_KEY"),

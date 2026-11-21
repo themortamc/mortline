@@ -60,7 +60,7 @@ Reglas del guion (pensadas para el algoritmo de Reels/TikTok/Shorts: que lo vean
 - Escribí los números como se dicen ("24 a 72 horas" está bien).
 - "titulo": texto que se ve arriba en pantalla los primeros 3 segundos, máximo 6 palabras.
   Complementa el gancho hablado (no lo repite palabra por palabra) y nombra el rubro o el problema.
-- "buscar" es una búsqueda EN INGLÉS de 2 a 4 palabras para un banco de videos de stock:
+- "buscar" es una búsqueda EN INGLÉS de 2 palabras (máximo 3) para un banco de videos de stock:
   algo concreto y filmable que acompañe la frase (ej: "hardware store shelves", "phone whatsapp chat",
   "cashier counter shop"). Nada abstracto ("success", "growth"). Variá las búsquedas entre escenas.
 - "caption": 1 a 3 frases con voseo que incluyan las palabras que un dueño buscaría
@@ -81,6 +81,9 @@ Revisalo y devolvé el MISMO formato JSON corregido:
 - Que el gancho sea específico del rubro y genere curiosidad (no genérico).
 - Que suene hablado, natural, como lo diría un mendocino de 25 años, no leído.
 - Que cada "buscar" sea concreto, filmable y en inglés, de 2 o 3 palabras comunes (ej: "hardware store", "cashier counter").
+- Que todo tenga sentido lógico y sea coherente entre escenas (horarios, situaciones reales del rubro).
+- Que el "titulo" use palabras reales y comunes, y que se entienda solo.
+- Ortografía perfecta con tildes (pizzería, catálogo, también, está).
 - Que no haya palabras de otros países (ver la lista de palabras que NO se usan) ni errores de ortografía,
   tampoco en los hashtags.
 Si ya está bien, devolvelo igual. Respondé SOLO con el JSON.

@@ -19,13 +19,15 @@ def chat(cfg: Config, system: str, user: str, temperature: float = 0.9) -> str:
     if not cfg.llm_key:
         raise LLMError("Falta la clave de FreeLLMAPI (FREELLMAPI_KEY o ~/.freellmapi-key).")
     ultimo = ""
-    for intento in range(3):
+    modelos = list(cfg.llm_modelos) or [cfg.llm_model]
+    for intento in range(max(3, len(modelos))):
+        modelo = modelos[min(intento, len(modelos) - 1)]
         try:
             r = requests.post(
                 f"{cfg.llm_url}/chat/completions",
                 headers={"Authorization": f"Bearer {cfg.llm_key}"},
                 json={
-                    "model": cfg.llm_model,
+                    "model": modelo,
                     "temperature": temperature,
                     "messages": [
                         {"role": "system", "content": system},
@@ -35,11 +37,13 @@ def chat(cfg: Config, system: str, user: str, temperature: float = 0.9) -> str:
                 timeout=180,
             )
             if r.status_code == 200:
-                return r.json()["choices"][0]["message"]["content"] or ""
+                texto = r.json()["choices"][0]["message"]["content"] or ""
+                if texto.strip():
+                    return texto
             ultimo = f"HTTP {r.status_code}: {r.text[:300]}"
         except requests.RequestException as exc:
             ultimo = str(exc)
-        time.sleep(3 * (intento + 1))
+        time.sleep(2)
     raise LLMError(
         f"FreeLLMAPI no respondió ({ultimo}). ¿Está abierta la app de escritorio en {cfg.llm_url}?"
     )

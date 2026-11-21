@@ -19,9 +19,13 @@ class VideoError(RuntimeError):
     pass
 
 
-def _ff(args: list[str]) -> None:
-    r = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", *args],
-                       capture_output=True, text=True)
+def _ff(args: list[str], limite: int = 600) -> None:
+    """Corre ffmpeg con tiempo máximo: si se traba, corta y avisa en vez de colgarse."""
+    try:
+        r = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-nostdin", *args],
+                           capture_output=True, text=True, timeout=limite)
+    except subprocess.TimeoutExpired:
+        raise VideoError(f"ffmpeg tardó más de {limite} s y se cortó (paso: {args[-1]}).")
     if r.returncode != 0:
         raise VideoError(r.stderr.strip()[-1500:])
 
@@ -117,18 +121,23 @@ def armar(*, tramos: list[tuple[float, float]], materiales: list[list[Material]]
 
     fonts = assets / "fonts"
     vf = f"ass='{ass}':fontsdir='{fonts}'"
-    entradas = ["-i", str(mudo), "-i", str(voz)]
+    # 1) Audio aparte y con duración fija: la música en bucle se corta en la ENTRADA (-t),
+    #    así ningún stream queda infinito (antes eso podía colgar a ffmpeg).
+    mezcla = trabajo / "mezcla.wav"
+    voz_f = f"[0:a]aresample=48000,apad=whole_dur={total:.3f}[voz]"
     if musica:
-        entradas += ["-stream_loop", "-1", "-i", str(musica)]
-        audio = (
-            f"[1:a]aresample=48000,apad,atrim=0:{total:.3f}[voz];"
-            f"[2:a]aresample=48000,atrim=0:{total:.3f},volume=0.13,"
-            f"afade=t=in:st=0:d=0.6,afade=t=out:st={total-1.6:.3f}:d=1.6[mus];"
-            f"[voz][mus]amix=inputs=2:duration=first:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11[a]"
-        )
+        _ff(["-i", str(voz), "-stream_loop", "-1", "-t", f"{total:.3f}", "-i", str(musica),
+             "-filter_complex",
+             f"{voz_f};[1:a]aresample=48000,volume=0.13,afade=t=in:st=0:d=0.6,"
+             f"afade=t=out:st={total-1.6:.3f}:d=1.6[mus];"
+             f"[voz][mus]amix=inputs=2:duration=first:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11[a]",
+             "-map", "[a]", "-ar", "48000", str(mezcla)], limite=180)
     else:
-        audio = f"[1:a]aresample=48000,apad,atrim=0:{total:.3f},loudnorm=I=-14:TP=-1.5:LRA=11[a]"
-    _ff([*entradas, "-filter_complex", f"[0:v]{vf}[v];{audio}", "-map", "[v]", "-map", "[a]",
+        _ff(["-i", str(voz), "-filter_complex", f"{voz_f};[voz]loudnorm=I=-14:TP=-1.5:LRA=11[a]",
+             "-map", "[a]", "-ar", "48000", str(mezcla)], limite=180)
+
+    # 2) Video final: subtítulos quemados + la mezcla.
+    _ff(["-i", str(mudo), "-i", str(mezcla), "-vf", vf, "-map", "0:v", "-map", "1:a",
          "-c:v", "libx264", "-preset", "medium", "-crf", "19", "-pix_fmt", "yuv420p",
          "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-t", f"{total:.3f}",
          "-movflags", "+faststart", str(salida)])
