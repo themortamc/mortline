@@ -1,0 +1,171 @@
+"""Elige un tema que no se haya hecho y escribe el guion con FreeLLMAPI."""
+
+from __future__ import annotations
+
+import random
+import re
+
+from . import llm
+from .config import Config
+from .historial import Historial
+
+RUBROS = {
+    "ferreterias": "ferreterías",
+    "repuestos": "casas de repuestos de autos y motos",
+    "gastronomia": "restaurantes, rotiserías y bares",
+    "indumentaria": "locales de ropa e indumentaria",
+    "barberias": "barberías y peluquerías",
+    "kioscos": "kioscos y almacenes",
+    "talleres": "talleres mecánicos",
+    "gimnasios": "gimnasios",
+    "clinicas": "consultorios y clínicas",
+    "distribuidoras": "distribuidoras y mayoristas",
+}
+
+SERVICIOS = {
+    "catalogo": "catálogo web con pedidos que llegan armados al WhatsApp",
+    "menu-qr": "menú digital con QR",
+    "pos": "sistema de registro de ventas y panel de ventas",
+    "anuncios": "campañas de anuncios en Instagram, Facebook, Google y TikTok",
+    "planillas": "planillas digitales hechas para el rubro",
+    "demo": "la demo gratis con sus propios productos en 24 a 72 horas",
+}
+
+# Qué servicios tienen sentido en cada rubro (el resto usa los generales).
+SOLO_EN = {"menu-qr": {"gastronomia"}}
+
+FORMATOS = {
+    "dolor": "Arrancá por un dolor concreto y cotidiano del rubro y mostrá cómo se resuelve.",
+    "error": "Contá un error común que comete el dueño del rubro y qué hacer en su lugar.",
+    "antes-despues": "Contrastá cómo es un día del negocio antes y después de tenerlo.",
+    "pregunta": "Abrí con una pregunta directa que el dueño se responda 'sí, me pasa'.",
+    "mito": "Desarmá una creencia típica (\"eso es para empresas grandes\", \"es caro\", \"es complicado\").",
+    "caso": "Contá brevemente uno de los casos reales (Todo y Más o Repuestos San Isidro) sin inventar datos.",
+    "tip": "Dá un consejo útil y accionable para el rubro, y recién al final mencioná mortups.",
+}
+
+SISTEMA = """Sos guionista de reels verticales de 20 a 30 segundos para Instagram y TikTok.
+Escribís para la marca descripta en el brief y respetás TODAS sus reglas.
+
+{brief}
+
+Reglas del guion (pensadas para el algoritmo de Reels/TikTok/Shorts: que lo vean completo y lo compartan):
+- Entre 45 y 65 palabras en total (unos 20 segundos). Más corto = más gente lo ve completo.
+- La primera escena es el gancho hablado: máximo 10 palabras, concreto del rubro, que genere curiosidad o
+  identificación inmediata ("me pasa"). Nada de saludos ni presentaciones ("Hola, soy...").
+- 4 a 6 escenas. Cada escena es 1 o 2 frases cortas. Cada escena aporta algo nuevo: no rellenes.
+- Tiene que ser útil o muy identificable, algo que el dueño quiera mandarle a otro comerciante.
+- La última escena es el llamado: escribir por WhatsApp (el link está en el perfil). Corta y firme.
+- Usá "..." para marcar una pausa natural de respiración (máximo 3 en todo el guion).
+- Escribí los números como se dicen ("24 a 72 horas" está bien).
+- "titulo": texto que se ve arriba en pantalla los primeros 3 segundos, máximo 6 palabras.
+  Complementa el gancho hablado (no lo repite palabra por palabra) y nombra el rubro o el problema.
+- "buscar" es una búsqueda EN INGLÉS de 2 a 4 palabras para un banco de videos de stock:
+  algo concreto y filmable que acompañe la frase (ej: "hardware store shelves", "phone whatsapp chat",
+  "cashier counter shop"). Nada abstracto ("success", "growth"). Variá las búsquedas entre escenas.
+- "caption": 1 a 3 frases con voseo que incluyan las palabras que un dueño buscaría
+  (ej: "catálogo web para ferretería", "vender por WhatsApp"), y una línea final que invite a
+  mandárselo a alguien que tenga ese tipo de negocio.
+- "hashtags": 3 a 5, específicos (rubro, ciudad/país, tema). Nada de #viral ni #fyp.
+
+Respondé SOLO con este JSON:
+{{"tema": "...", "titulo": "...", "escenas": [{{"texto": "...", "buscar": "..."}}],
+  "caption": "texto para la publicación, 1 a 3 frases, voseo, con un llamado a escribir",
+  "hashtags": ["#...", "..."]}}"""
+
+EDITOR = """Sos editor de guiones de reels. Recibís un guion en JSON y el brief de la marca.
+Revisalo y devolvé el MISMO formato JSON corregido:
+- Que respete el brief (sin datos inventados, sin precios, sin frases de IA, voseo rioplatense, primera persona singular).
+- Que tenga entre 45 y 65 palabras sumando todas las escenas.
+- Que el "titulo" tenga máximo 6 palabras y no repita literal el gancho hablado.
+- Que el gancho sea específico del rubro y genere curiosidad (no genérico).
+- Que suene hablado, natural, como lo diría un mendocino de 25 años, no leído.
+- Que cada "buscar" sea concreto, filmable y en inglés, de 2 o 3 palabras comunes (ej: "hardware store", "cashier counter").
+- Que no haya palabras de otros países (ver la lista de palabras que NO se usan) ni errores de ortografía,
+  tampoco en los hashtags.
+Si ya está bien, devolvelo igual. Respondé SOLO con el JSON.
+
+Brief:
+{brief}"""
+
+
+def elegir_combo(hist: Historial, rubro: str | None = None) -> tuple[str, str, str]:
+    usados = hist.combos_usados()
+    rubros = [rubro] if rubro else list(RUBROS)
+    opciones = []
+    for r in rubros:
+        for s in SERVICIOS:
+            if s in SOLO_EN and r not in SOLO_EN[s]:
+                continue
+            for f in FORMATOS:
+                if f"{r}/{s}/{f}" not in usados:
+                    opciones.append((r, s, f))
+    if not opciones:
+        raise RuntimeError("Ya se hicieron todas las combinaciones de tema. Pasale un tema a mano.")
+    # Preferir rubros y formatos que se usaron menos últimamente.
+    recientes = [x["combo"].split("/") for x in hist.reels[-15:] if x.get("combo")]
+    def peso(o):
+        return 1 + sum(o[0] == x[0] for x in recientes) * 2 + sum(o[2] == x[2] for x in recientes)
+    minimo = min(peso(o) for o in opciones)
+    return random.choice([o for o in opciones if peso(o) == minimo])
+
+
+def contar_palabras(datos: dict) -> int:
+    return sum(len(re.findall(r"\w+", e["texto"])) for e in datos["escenas"])
+
+
+def escribir(cfg: Config, hist: Historial, tema: str | None = None, rubro: str | None = None) -> dict:
+    brief = cfg.marca.read_text(encoding="utf-8")
+    combo = None
+    if tema:
+        pedido = f"Tema del reel: {tema}"
+    else:
+        r, s, f = elegir_combo(hist, rubro)
+        combo = f"{r}/{s}/{f}"
+        pedido = (
+            f"Rubro: {RUBROS[r]}.\nQué mostrar: {SERVICIOS[s]}.\nEnfoque: {FORMATOS[f]}"
+        )
+    previos = hist.ganchos(30)
+    if previos:
+        pedido += "\n\nGanchos ya usados (no repitas ni parafrasees ninguno):\n- " + "\n- ".join(previos)
+
+    datos = llm.chat_json(cfg, SISTEMA.format(brief=brief), pedido, temperature=1.0)
+    datos = llm.chat_json(
+        cfg, EDITOR.format(brief=brief), "Guion a revisar:\n" + _dump(datos), temperature=0.4
+    )
+    for _ in range(2):
+        n = contar_palabras(datos)
+        if 40 <= n <= 72:
+            break
+        datos = llm.chat_json(
+            cfg,
+            EDITOR.format(brief=brief),
+            f"Este guion tiene {n} palabras; dejalo entre 45 y 65 sin perder el gancho:\n" + _dump(datos),
+            temperature=0.4,
+        )
+    _validar(datos)
+    datos["combo"] = combo
+    return datos
+
+
+def texto_locucion(datos: dict) -> str:
+    return "\n\n".join(e["texto"].strip() for e in datos["escenas"])
+
+
+def _dump(d: dict) -> str:
+    import json
+
+    return json.dumps(d, ensure_ascii=False)
+
+
+def _validar(d: dict) -> None:
+    if not isinstance(d.get("escenas"), list) or len(d["escenas"]) < 3:
+        raise llm.LLMError("El guion vino sin escenas suficientes.")
+    for e in d["escenas"]:
+        if not e.get("texto") or not e.get("buscar"):
+            raise llm.LLMError("Hay una escena sin texto o sin búsqueda.")
+    d.setdefault("tema", d["escenas"][0]["texto"])
+    d["gancho"] = d["escenas"][0]["texto"]
+    d.setdefault("titulo", "")
+    d.setdefault("caption", "")
+    d.setdefault("hashtags", [])

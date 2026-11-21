@@ -1,0 +1,21 @@
+[project]
+name = "mortline"
+version = "0.1.0"
+description = "Pipeline de reels automáticos para mortups: guion con FreeLLMAPI, voz con GGNarrator, clips libres y subtítulos palabra por palabra."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "requests>=2.32",
+    "faster-whisper>=1.1",
+]
+
+[project.scripts]
+mortline = "mortline.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["mortline"]
