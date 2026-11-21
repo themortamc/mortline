@@ -97,7 +97,7 @@ mortline --voz Kore              # otra voz (Puck, Fenrir, Charon, Kore, Zephyr)
 mortline historial               # lo que ya se hizo
 ```
 
-Cada reel queda en `~/Videos/mortline/<fecha>_<tema>/`:
+Cada reel queda en `~/Downloads/job/reels/<fecha>_<tema>/` (se cambia con `MORTLINE_SALIDA`):
 
 ```
 reel.mp4       1080×1920 · H.264 + AAC · listo para subir
@@ -106,6 +106,18 @@ guion.json     guion, título, búsquedas
 voz.wav        locución sola
 creditos.txt   de dónde salió cada clip y la música
 ```
+
+## Qué se guarda dónde
+
+| Qué | Dónde |
+|---|---|
+| Código, marca, música CC0 | este repo |
+| Historial (para no repetir temas, ganchos ni clips) | `data/historial.json`, se sube solo a GitHub después de cada reel |
+| Reels terminados | `MORTLINE_SALIDA` (por defecto `~/Downloads/job/reels`) |
+| Modelo de Whisper | `modelos/` (fuera de git, se baja solo la primera vez) |
+| Claves | `.env` (fuera de git; copiá `.env.example`) |
+
+Los clips descargados no se guardan: se borran al terminar cada reel.
 
 ## Personalizar
 

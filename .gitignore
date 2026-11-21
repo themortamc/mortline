@@ -1,10 +1,18 @@
+# Claves: nunca al repo público
 .env
+
+# Se regeneran solos
 .venv/
 __pycache__/
 *.pyc
-data/
+modelos/
+data/cache/
+
+# Música: se versionan los loops CC0; tus mp3 propios quedan fuera
 music/*
 !music/.gitkeep
+!music/cc0/
+
 *.mp4
 *.wav
 !assets/**

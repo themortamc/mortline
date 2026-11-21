@@ -66,7 +66,7 @@ def cargar() -> Config:
         pixabay_key=_clave("PIXABAY_API_KEY"),
         pexels_key=_clave("PEXELS_API_KEY"),
         web=os.environ.get("MORTLINE_WEB", "mortups.com.ar"),
-        salida=Path(os.environ.get("MORTLINE_SALIDA", "~/Videos/mortline")).expanduser(),
+        salida=Path(os.environ.get("MORTLINE_SALIDA", "~/Downloads/job/reels")).expanduser(),
         whisper_modelo=os.environ.get("MORTLINE_WHISPER", "small"),
         marca=ROOT / "marca" / "mortups.md",
         musica=ROOT / "music",

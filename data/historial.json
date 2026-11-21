@@ -1,0 +1,122 @@
+{
+  "reels": [
+    {
+      "fecha": "2026-11-21T15:18:34",
+      "combo": "ferreterias/pos/error",
+      "tema": "Error de registro de ventas en ferreterías",
+      "gancho": "Cerrás la caja y no tenés la neta de cuánto vendiste.",
+      "titulo": "Cerrás caja sin saber cuánto vendiste",
+      "voz": "Puck",
+      "clips": [
+        "openverse:48eb8419-0028-4891-ba3b-3ef9fcbea250",
+        "openverse:5e3be13b-b225-4d55-971d-6630106b5108",
+        "openverse:ac93cf19-5e77-4984-ba06-8dfeee08b951",
+        "openverse:c94ce07e-e03c-4461-95b6-c8cb460f6841",
+        "openverse:dd8018bd-ca77-407f-a961-7eef5dabe218",
+        "openverse:e8c7f798-7d05-4d11-bfbd-e072a79fecf4"
+      ],
+      "duracion": 17.62,
+      "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-21_1512_error-de-registro-de-ventas-en-ferreterias"
+    },
+    {
+      "fecha": "2026-11-21T15:28:05",
+      "combo": "kioscos/catalogo/tip",
+      "tema": "Catálogo web para kioscos y almacenes con pedidos por WhatsApp",
+      "gancho": "En el kiosco, contestar pedidos por WhatsApp te come el día.",
+      "titulo": "Pedidos por WhatsApp en kioscos",
+      "voz": "Puck",
+      "clips": [
+        "openverse:2b72940d-c4c2-421f-9726-6993b6e9b2cb",
+        "openverse:30e33b1e-e056-4f0c-a12f-0470c2ac53a4",
+        "openverse:31796b15-91de-4c6f-8d07-fa115243884d",
+        "openverse:4a1f16b6-adf8-42a2-a94f-ab15ef4f4d8f",
+        "openverse:769924fe-8173-4f2b-a170-2052885f659f",
+        "openverse:849628fd-1cfd-4b94-8c46-e168e241cba3",
+        "openverse:f0a7cfff-b8f8-4e5f-9ff6-e956268cd78a"
+      ],
+      "duracion": 17.6,
+      "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-21_1521_catalogo-web-para-kioscos-y-almacenes-con-pedido"
+    },
+    {
+      "fecha": "2026-11-21T15:55:19",
+      "combo": "gastronomia/anuncios/pregunta",
+      "tema": "campañas anuncios",
+      "gancho": "¿Tu pizzeria tiene las mesas vacías a la medianoche?",
+      "titulo": "Pizzeria: mesas llenas sin agasajar",
+      "voz": "Puck",
+      "clips": [
+        "pixabay:10847",
+        "pixabay:141482",
+        "pixabay:161949",
+        "pixabay:174262",
+        "pixabay:176024",
+        "pixabay:202987",
+        "pixabay:232538",
+        "pixabay:88225"
+      ],
+      "duracion": 19.73,
+      "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-21_1554_campanas-anuncios"
+    },
+    {
+      "fecha": "2026-11-21T15:58:27",
+      "combo": "gastronomia/demo/dolor",
+      "tema": "Rotisería: pedir sin levantar el teléfono",
+      "gancho": "El cliente pregunta por el menú y vos estás en medio de la cocina. Así no da.",
+      "titulo": "Menú digital para rotiserías",
+      "voz": "Puck",
+      "clips": [
+        "pixabay:11323",
+        "pixabay:145582",
+        "pixabay:168485",
+        "pixabay:169446",
+        "pixabay:223892",
+        "pixabay:237504",
+        "pixabay:238823",
+        "pixabay:254753"
+      ],
+      "duracion": 21.07,
+      "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-21_1557_rotiseria-pedir-sin-levantar-el-telefono"
+    },
+    {
+      "fecha": "2026-11-21T16:09:15",
+      "combo": "barberias/anuncios/mito",
+      "tema": "desmontar la creencia de que la publicidad digital es solo para grandes empresas, mostrando que un barbero puede llenar la silla con campañas accesibles",
+      "gancho": "Sos barbero y creés que la publicidad es solo para las grandes cadenas. Falso.",
+      "titulo": "Llená tu silla con ads",
+      "cta": "whatsapp",
+      "voz": "Puck",
+      "clips": [
+        "pixabay:1016",
+        "pixabay:1191",
+        "pixabay:21147",
+        "pixabay:3182",
+        "pixabay:3735",
+        "pixabay:37417",
+        "pixabay:79336",
+        "pixabay:9490",
+        "pixabay:94979"
+      ],
+      "duracion": 24.92,
+      "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-21_1607_desmontar-la-creencia-de-que-la-publicidad-digit"
+    },
+    {
+      "fecha": "2026-11-21T16:11:33",
+      "combo": "barberias/pos/antes-despues",
+      "tema": "Sistema de registro de ventas y panel para barberías",
+      "gancho": "Anotás ventas en el cuaderno y perdés horas.",
+      "titulo": "Tu barbería sin anotar a mano",
+      "cta": "comentario",
+      "voz": "Puck",
+      "clips": [
+        "openverse:11f6cee3-52a0-43e2-828c-2b0c916a9506",
+        "openverse:1beaa6d4-0b0f-4f85-8404-859423de4925",
+        "pixabay:191049",
+        "pixabay:277042",
+        "pixabay:3180",
+        "pixabay:736"
+      ],
+      "duracion": 16.65,
+      "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-21_1610_sistema-de-registro-de-ventas-y-panel-para-barbe"
+    }
+  ]
+}

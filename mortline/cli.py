@@ -76,9 +76,9 @@ def hacer_reel(cfg: Config, hist: Historial, tema: str | None, rubro: str | None
     materiales, creditos = [], []
     for (ini, fin), escena in zip(tramos, datos["escenas"]):
         n = video.tomas_por_escena(fin - ini)
-        mats = clips.buscar(cfg, escena["buscar"], n, (fin - ini) / n + 1, usados, cfg.datos / "cache")
+        mats = clips.buscar(cfg, escena["buscar"], n, (fin - ini) / n + 1, usados, trabajo / "clips")
         if not mats:
-            mats = clips.buscar(cfg, "small business shop", n, 3, usados, cfg.datos / "cache")
+            mats = clips.buscar(cfg, "small business shop", n, 3, usados, trabajo / "clips")
         if not mats and materiales:
             mats = materiales[-1]
         if not mats:
@@ -115,8 +115,26 @@ def hacer_reel(cfg: Config, hist: Historial, tema: str | None, rubro: str | None
         "clips": sorted({m.id for ms in materiales for m in ms}), "duracion": total,
         "carpeta": str(carpeta),
     })
+    _guardar_en_github()
     print(f"\n✅ Listo en {time.time() - t0:.0f} s · {total:.1f} s de reel\n   {reel}\n   Caption: {carpeta / 'caption.txt'}")
     return reel
+
+
+def _guardar_en_github() -> None:
+    """Sube el historial al repo para que no se pierda (si falla, sigue sin cortar el reel)."""
+    from .config import ROOT
+
+    git = ["git", "-C", str(ROOT)]
+    try:
+        subprocess.run([*git, "add", "data/historial.json"], check=True, capture_output=True, timeout=30)
+        hay = subprocess.run([*git, "diff", "--cached", "--quiet"], capture_output=True, timeout=30)
+        if hay.returncode == 0:
+            return
+        subprocess.run([*git, "commit", "-m", "historial: nuevo reel"], check=True, capture_output=True, timeout=30)
+        subprocess.run([*git, "push", "-q"], check=True, capture_output=True, timeout=90)
+        print("   Historial guardado en GitHub.")
+    except (subprocess.SubprocessError, OSError):
+        print("   (No pude subir el historial a GitHub; queda guardado en el repo local.)")
 
 
 def _historial(hist: Historial) -> None:

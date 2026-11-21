@@ -45,7 +45,9 @@ def alinear(cfg: Config, audio: Path, escenas: list[str]) -> list[Palabra]:
     ).stdout
     muestras = np.frombuffer(pcm, dtype=np.float32)
 
-    modelo = WhisperModel(cfg.whisper_modelo, device="cpu", compute_type="int8")
+    # El modelo se guarda dentro del repo (carpeta modelos/, fuera de git: se baja solo la primera vez).
+    modelo = WhisperModel(cfg.whisper_modelo, device="cpu", compute_type="int8",
+                          download_root=str(cfg.datos.parent / "modelos"))
     segmentos, _ = modelo.transcribe(
         muestras,
         language="es",
