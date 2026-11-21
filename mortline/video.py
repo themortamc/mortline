@@ -86,25 +86,40 @@ def _toma(m: Material, inicio: float, dur: float, destino: Path, n: int = 0) -> 
 
 
 def _placa(assets: Path, dur: float, llamado: str, web: str, trabajo: Path, destino: Path) -> None:
-    """Placa final: logo, la web bien grande y el llamado de este reel (sin teléfono)."""
+    """Placa final: fondo liso de marca, logo recortado, llamado en botón y web en blanco grande.
+    Todo entra escalonado (logo, botón, web, aviso) dentro de la zona segura de Instagram/TikTok."""
     logo = assets / "logo.jpg"
     fuerte = assets / "fonts" / "HankenGrotesk-ExtraBold.ttf"
     media = assets / "fonts" / "HankenGrotesk-SemiBold.ttf"
     textos = {"t1.txt": llamado, "t2.txt": web, "t3.txt": "Link en el perfil"}
     for nombre, t in textos.items():
         (trabajo / nombre).write_text(t, encoding="utf-8")
-    fade = f"fade=t=in:st=0:d=0.35"
+
+    def entra(desde: float, dur_: float = 0.3) -> str:
+        return f"if(lt(t,{desde}),0,min(1,(t-{desde})/{dur_}))"
+
+    def sube(y: int, desde: float, px: int = 28) -> str:
+        return f"{y}+{px}*(1-min(1,max(0,(t-{desde})/0.3)))"
+
+    bw, bh, br = 820, 136, 68
+    redondo = f"255*lte(hypot(max(0,abs(X-W/2)-(W/2-{br})),max(0,abs(Y-H/2)-(H/2-{br}))),{br})"
     filtro = (
-        f"[0:v]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},boxblur=30:2,eq=brightness=-0.08[fondo];"
-        f"[1:v]scale=860:860[logo];"
-        f"[fondo][logo]overlay=(W-w)/2:330,"
-        f"drawtext=fontfile='{media}':textfile='{trabajo/'t1.txt'}':fontcolor=white:fontsize=64:x=(w-tw)/2:y=1260,"
-        f"drawtext=fontfile='{fuerte}':textfile='{trabajo/'t2.txt'}':fontcolor=0x8B2CFF:fontsize=96:x=(w-tw)/2:y=1355,"
-        f"drawtext=fontfile='{media}':textfile='{trabajo/'t3.txt'}':fontcolor=white@0.85:fontsize=52:x=(w-tw)/2:y=1500,"
-        f"fps={FPS},setsar=1,{fade}[v]"
+        f"color=c=0x0E0A16:s={W}x{H}:d={dur:.3f}:r={FPS}[fondo];"
+        f"[0:v]format=rgba,colorkey=0x000000:0.22:0.08,scale=640:640,fade=t=in:st=0:d=0.3:alpha=1[logo];"
+        f"color=c=white:s={bw}x{bh}:d={dur:.3f}:r={FPS},format=rgba,geq=r=255:g=255:b=255:a='{redondo}',"
+        f"fade=t=in:st=0.25:d=0.3:alpha=1[boton];"
+        f"[fondo][logo]overlay=x=(W-w)/2:y='{sube(330, 0)}':eval=frame[a];"
+        f"[a][boton]overlay=x=(W-w)/2:y='{sube(1080, 0.25)}':eval=frame,"
+        f"drawtext=fontfile='{media}':textfile='{trabajo / 't1.txt'}':fontcolor=0x17141F:fontsize=52:"
+        f"x=(w-tw)/2:y='{sube(1080, 0.25)}+({bh}-th)/2':alpha='{entra(0.25)}',"
+        f"drawtext=fontfile='{fuerte}':textfile='{trabajo / 't2.txt'}':fontcolor=white:fontsize=96:"
+        f"x=(w-tw)/2:y='{sube(1290, 0.4)}':alpha='{entra(0.4)}',"
+        f"drawtext=fontfile='{media}':textfile='{trabajo / 't3.txt'}':fontcolor=0xB9A8D9:fontsize=46:"
+        f"x=(w-tw)/2:y='{sube(1420, 0.55)}':alpha='{entra(0.55)}',"
+        f"fps={FPS},setsar=1,format=yuv420p[v]"
     )
-    _ff(["-loop", "1", "-t", f"{dur:.3f}", "-i", str(logo), "-loop", "1", "-t", f"{dur:.3f}", "-i", str(logo),
-         "-filter_complex", filtro, "-map", "[v]", *X264, str(destino)])
+    _ff(["-loop", "1", "-t", f"{dur:.3f}", "-i", str(logo), "-filter_complex", filtro, "-map", "[v]",
+         "-t", f"{dur:.3f}", *X264, str(destino)])
 
 
 def armar(*, tramos: list[tuple[float, float]], materiales: list[list[Material]], voz: Path,

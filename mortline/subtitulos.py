@@ -141,7 +141,7 @@ ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Sub,Hanken Grotesk ExtraBold,96,{BLANCO},{BLANCO},{NEGRO},&H80000000,0,0,0,0,100,100,0,0,1,7,3,5,80,80,0,1
-Style: Titulo,Hanken Grotesk ExtraBold,74,{NEGRO},{NEGRO},{BLANCO},{BLANCO},0,0,0,0,100,100,0,0,3,22,0,8,90,90,250,1
+Style: Titulo,Hanken Grotesk ExtraBold,88,{BLANCO},{BLANCO},{VIOLETA},{VIOLETA},0,0,0,0,100,100,0,0,3,24,0,7,84,84,330,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -151,7 +151,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         # Gancho visual desde el primer cuadro: caja blanca arriba, los primeros 3 segundos.
         t = _limpio(titulo).replace("\n", " ")
         lineas.append(
-            "Dialogue: 1,0:00:00.00," + _t(min(3.0, hasta)) + r",Titulo,,0,0,0,,{\fad(0,200)}" + t
+            "Dialogue: 1,0:00:00.00," + _t(min(3.0, hasta)) + r",Titulo,,0,0,0,,{\fad(120,220)\move(84,366,84,330,0,260)}" + t
         )
     pos = r"{\an5\pos(540,1180)}"
     grupos = _grupos([p for p in palabras if p.inicio < hasta])
