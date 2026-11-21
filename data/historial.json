@@ -137,6 +137,24 @@
       ],
       "duracion": 22.65,
       "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-21_1643_calculadora-de-precios-con-comisiones-y-cuotas"
+    },
+    {
+      "fecha": "2026-11-21T16:53:54",
+      "combo": "producto/calculadora-de-precios",
+      "tema": "Calculadora de precios con comisiones y cuotas",
+      "gancho": "Cargás el costo y te saca el precio justo para cuotas.",
+      "titulo": "Calculá el precio final de tus cuotas",
+      "cta": "producto",
+      "voz": "Puck",
+      "clips": [
+        "captura:calculadora-de-precios-1",
+        "pixabay:140595",
+        "pixabay:211636",
+        "pixabay:24114",
+        "pixabay:2988"
+      ],
+      "duracion": 15.49,
+      "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-21_1651_calculadora-de-precios-con-comisiones-y-cuotas"
     }
   ]
 }
