@@ -117,6 +117,26 @@
       ],
       "duracion": 16.65,
       "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-21_1610_sistema-de-registro-de-ventas-y-panel-para-barbe"
+    },
+    {
+      "fecha": "2026-11-21T16:45:01",
+      "combo": "producto/calculadora-de-precios",
+      "tema": "Calculadora de precios con comisiones y cuotas",
+      "gancho": "¿Sabés cuánto te queda limpio cuando pagan en cuotas? ... La planilla lo resuelve.",
+      "titulo": "Calculá tu margen real hoy",
+      "cta": "producto",
+      "voz": "Puck",
+      "clips": [
+        "captura:calculadora-de-precios-1",
+        "captura:calculadora-de-precios-2",
+        "openverse:5ae04fe0-f548-4101-8756-476dd1dc10fb",
+        "openverse:71651bf3-755b-44a8-8b32-6da31758aee5",
+        "pixabay:1006",
+        "pixabay:348444",
+        "pixabay:387303"
+      ],
+      "duracion": 22.65,
+      "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-21_1643_calculadora-de-precios-con-comisiones-y-cuotas"
     }
   ]
 }
