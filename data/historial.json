@@ -155,6 +155,25 @@
       ],
       "duracion": 15.49,
       "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-21_1651_calculadora-de-precios-con-comisiones-y-cuotas"
+    },
+    {
+      "fecha": "2026-11-21T16:57:52",
+      "combo": "producto/cuentas-corrientes-fiado",
+      "tema": "Planilla de cuentas corrientes para clientes fiados",
+      "gancho": "¿Quién te debe y desde cuándo? Con el cuaderno, imposible saberlo.",
+      "titulo": "Fiado sin perder la cuenta",
+      "cta": "producto",
+      "voz": "Puck",
+      "clips": [
+        "captura:cuentas-corrientes-fiado-1",
+        "captura:cuentas-corrientes-fiado-2",
+        "pixabay:130652",
+        "pixabay:16166",
+        "pixabay:19179",
+        "pixabay:46688"
+      ],
+      "duracion": 17.79,
+      "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-21_1656_planilla-de-cuentas-corrientes-para-clientes-fia"
     }
   ]
 }
