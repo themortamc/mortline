@@ -31,6 +31,15 @@ def _slug(t: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", t).strip("-")[:48] or "reel"
 
 
+def nombre_archivo(datos: dict) -> str:
+    """Nombre del video = su título (el de la caja de arriba), apto para cualquier sistema."""
+    titulo = (datos.get("titulo") or datos.get("tema") or "reel").strip()
+    titulo = re.sub(r'[\\/:*?"<>|\n\r\t]+', " ", titulo)
+    titulo = titulo.replace("¿", "").replace("¡", "")
+    titulo = re.sub(r"\s+", " ", titulo).strip(" .")
+    return titulo[:80] or "reel"
+
+
 def _paso(n: int, texto: str) -> None:
     print(f"\033[38;2;139;44;255m●\033[0m [{n}/6] {texto}", flush=True)
 
@@ -116,7 +125,10 @@ def _armar(cfg, hist, datos, carpeta, voz_nombre, con_musica, producto, t0, reha
     inicio_placa = video.cuando_placa(tramos, dur_voz)
     ass = trabajo / "subtitulos.ass"
     subtitulos.escribir_ass(palabras, ass, hasta=inicio_placa, titulo=datos.get("titulo", ""))
-    reel = carpeta / "reel.mp4"
+    reel = carpeta / f"{nombre_archivo(datos)}.mp4"
+    for viejo in carpeta.glob("*.mp4"):  # al rehacer, no dejar el video anterior con otro nombre
+        if viejo != reel:
+            viejo.unlink()
     total = video.armar(
         tramos=tramos, materiales=materiales, voz=audio, dur_voz=dur_voz, ass=ass,
         musica=tema_musical, assets=cfg.assets, llamado=guion.CTAS[datos['cta']]['placa'], web=cfg.web,

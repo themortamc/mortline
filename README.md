@@ -37,7 +37,7 @@ flowchart LR
     B --> E[🎞️ Clips libres<br/>Pixabay · Pexels · Openverse]
     D --> F[🎬 ffmpeg<br/>cortes · subtítulos · música · placa]
     E --> F
-    F --> G[📱 reel.mp4 + caption.txt]
+    F --> G[📱 Título del reel.mp4 + caption.txt]
     G --> H[(historial.json<br/>no repetir)]
     H -.-> A
 ```
@@ -100,7 +100,7 @@ mortline historial               # lo que ya se hizo
 Cada reel queda en `~/Downloads/job/reels/<fecha>_<tema>/` (se cambia con `MORTLINE_SALIDA`):
 
 ```
-reel.mp4       1080×1920 · H.264 + AAC · listo para subir
+<Título>.mp4   el video con el nombre de su título · 1080×1920 · H.264 + AAC · listo para subir
 caption.txt    texto + hashtags para la publicación
 guion.json     guion, título, búsquedas
 voz.wav        locución sola
