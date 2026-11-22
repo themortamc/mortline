@@ -1,0 +1,1 @@
+{"hooks":{"Stop":[{"hooks":[{"type":"command","command":"~/.claude/hooks/verify-stop.sh 'python -m compileall -q mortline'","timeout":200,"statusMessage":"Verificando"}]}]}}
