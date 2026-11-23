@@ -285,6 +285,22 @@
       "formato": "cliente-tipo",
       "carpeta": "/home/mortamc/Downloads/job/reels/Turnos web sin depender del boca a boca",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-22_2225_historia-de-un-dueno-de-barberia-que-usa-campana"
+    },
+    {
+      "fecha": "2026-11-22T22:29:29",
+      "combo": "indumentaria/planillas/tutorial-3-pasos",
+      "tema": "Planillas para indumentaria",
+      "gancho": "¿Contás tallas a ojo?",
+      "titulo": "Ordená el stock de tu local",
+      "cta": "whatsapp",
+      "voz": "",
+      "clips": [],
+      "duracion": 33.45,
+      "estilo": "animado",
+      "estilo_visual": "ticket",
+      "formato": "tutorial-3-pasos",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Ordená el stock de tu local",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-22_2228_planillas-para-indumentaria"
     }
   ]
 }
