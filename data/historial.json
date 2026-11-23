@@ -317,6 +317,22 @@
       "formato": "antes-despues",
       "carpeta": "/home/mortamc/Downloads/job/reels/Gimnasio sin gritar horarios",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-22_2231_contraste-antes-despues-en-gimnasios-con-catalog"
+    },
+    {
+      "fecha": "2026-11-22T22:43:57",
+      "combo": "talleres/demo/pregunta",
+      "tema": "Demo gratis en 24 a 72 horas de catálogo web para talleres mecánicos",
+      "gancho": "¿Te piden presupuesto por WhatsApp mientras estás bajo un auto?",
+      "titulo": "Presupuestos para tu taller mecánico",
+      "cta": "whatsapp",
+      "voz": "",
+      "clips": [],
+      "duracion": 34.9,
+      "estilo": "animado",
+      "estilo_visual": "pop",
+      "formato": "pregunta",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Presupuestos para tu taller mecánico",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-22_2236_demo-gratis-en-24-a-72-horas-de-catalogo-web-par"
     }
   ]
 }
