@@ -173,7 +173,8 @@
         "pixabay:46688"
       ],
       "duracion": 17.79,
-      "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-21_1656_planilla-de-cuentas-corrientes-para-clientes-fia"
+      "carpeta": "/home/mortamc/Downloads/job/reels/Fiado sin perder la cuenta",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-21_1656_planilla-de-cuentas-corrientes-para-clientes-fia"
     },
     {
       "fecha": "2026-11-21T17:04:34",
@@ -192,7 +193,8 @@
         "pixabay:3176"
       ],
       "duracion": 20.28,
-      "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-21_1701_calculadora-de-precios-con-comisiones-y-cuotas"
+      "carpeta": "/home/mortamc/Downloads/job/reels/Calculá precios sin errores",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-21_1701_calculadora-de-precios-con-comisiones-y-cuotas"
     },
     {
       "fecha": "2026-11-22T21:43:54",
@@ -205,7 +207,8 @@
       "clips": [],
       "duracion": 21.87,
       "estilo": "animado",
-      "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-22_2142_ferreterias"
+      "carpeta": "/home/mortamc/Downloads/job/reels/Controlá tus ventas reales",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-22_2142_ferreterias"
     },
     {
       "fecha": "2026-11-22T21:51:26",
@@ -218,7 +221,8 @@
       "clips": [],
       "duracion": 15.09,
       "estilo": "animado",
-      "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-22_2149_gimnasios-demo-gratuita"
+      "carpeta": "/home/mortamc/Downloads/job/reels/Agenda de turnos sin desorden",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-22_2149_gimnasios-demo-gratuita"
     },
     {
       "fecha": "2026-11-22T21:52:49",
@@ -231,7 +235,24 @@
       "clips": [],
       "duracion": 19.03,
       "estilo": "animado",
-      "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-22_2151_barberias-ventas-al-dia-con-panel"
+      "carpeta": "/home/mortamc/Downloads/job/reels/Panel de ventas para barberos",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-22_2151_barberias-ventas-al-dia-con-panel"
+    },
+    {
+      "fecha": "2026-11-22T22:21:36",
+      "combo": "ferreterias/planillas/mito-verdad",
+      "tema": "Planillas digitales para ferreterías: mito de que son complicadas",
+      "gancho": "Mirá, ¿creés que una planilla digital es complicado? No. No necesitás un ingeniero ni un sistema que tarde meses en andar.",
+      "titulo": "Tu ferretería sin planillas",
+      "cta": "comentario",
+      "voz": "",
+      "clips": [],
+      "duracion": 37.21,
+      "estilo": "animado",
+      "estilo_visual": "neon",
+      "formato": "mito-verdad",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Tu ferretería sin planillas",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-22_2219_planillas-digitales-para-ferreterias-mito-de-que"
     }
   ]
 }
