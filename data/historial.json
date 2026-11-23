@@ -429,6 +429,22 @@
       "formato": "top3-errores",
       "carpeta": "/home/mortamc/Downloads/job/reels/Errores de gestión en almacenes",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-23_1924_top-3-errores-de-gestion-en-kioscos-y-almacenes"
+    },
+    {
+      "fecha": "2026-11-23T19:34:36",
+      "combo": "gimnasios/pos/dato-sorprendente",
+      "tema": "gimnasios",
+      "gancho": "¿Llegás al cierre de caja sin saber cuánto vendiste realmente?",
+      "titulo": "Controlá la caja de tu gimnasio",
+      "cta": "comentario",
+      "voz": "",
+      "clips": [],
+      "duracion": 37.89,
+      "estilo": "animado",
+      "estilo_visual": "minimal",
+      "formato": "dato-sorprendente",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Controlá la caja de tu gimnasio",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-23_1930_gimnasios"
     }
   ]
 }
