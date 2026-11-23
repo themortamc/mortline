@@ -413,6 +413,22 @@
       "formato": "pregunta",
       "carpeta": "/home/mortamc/Downloads/job/reels/Dejá de imprimir cartas cada semana",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-23_1917_menu-digital-con-qr-para-restaurantes-rotiserias"
+    },
+    {
+      "fecha": "2026-11-23T19:26:43",
+      "combo": "kioscos/pos/top3-errores",
+      "tema": "Top 3 errores de gestión en kioscos y almacenes",
+      "gancho": "Tres errores que te hacen perder plata en tu almacén.",
+      "titulo": "Errores de gestión en almacenes",
+      "cta": "whatsapp",
+      "voz": "",
+      "clips": [],
+      "duracion": 41.24,
+      "estilo": "animado",
+      "estilo_visual": "editorial",
+      "formato": "top3-errores",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Errores de gestión en almacenes",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-23_1924_top-3-errores-de-gestion-en-kioscos-y-almacenes"
     }
   ]
 }
