@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import re
 
-from . import animado, llm
+from . import animado, guion, llm
 from .config import Config
 
 PLANTILLAS = {
@@ -16,34 +16,45 @@ PLANTILLAS = {
     "dato": (2, 2, "clock"),         # número grande que sube [valor, etiqueta]
     "chat": (2, 4, "message-circle"),  # celular con conversación (cliente / negocio)
     "grafico": (3, 5, "trending-up"),  # barras que crecen [título, etiqueta1..4]
+    "mito": (2, 2, "x"),             # [mito tachado, verdad]
+    "antes_despues": (2, 2, "check"),  # [cómo era antes, cómo es ahora]
+    "ticket": (3, 5, "receipt"),     # [encabezado, renglón..., total] con "detalle | valor"
+    "celdas": (2, 5, "file-spreadsheet"),  # filas de planilla "etiqueta | valor" que se llenan
 }
-MAX_CHARS = {"titular": 28, "pasos": 26, "flujo": 22, "dato": 28, "chat": 34, "grafico": 22}
+MAX_CHARS = {"titular": 28, "pasos": 26, "flujo": 22, "dato": 28, "chat": 34, "grafico": 22,
+             "mito": 40, "antes_despues": 40, "ticket": 24, "celdas": 24}
 ALIAS = {"titulo": "titular", "texto": "titular", "paso": "pasos", "dato": "dato", "datos": "dato", "numero": "dato",
          "número": "dato", "flujos": "flujo", "graficos": "grafico", "gráfico": "grafico", "barras": "grafico",
-         "whatsapp": "chat", "conversacion": "chat"}
-MAX_SEG = 3.3    # un corte como mucho cada ~3 s
+         "whatsapp": "chat", "conversacion": "chat", "antes-despues": "antes_despues", "antesdespues": "antes_despues",
+         "antes/despues": "antes_despues", "mito_verdad": "mito", "mito-verdad": "mito", "recibo": "ticket",
+         "planilla": "celdas", "celda": "celdas", "tabla": "celdas"}
+MAX_SEG = 2.9    # un corte como mucho cada ~3 s
 MIN_SEG = 0.9
 
-PROMPT = """Sos director de motion graphics de reels verticales explicativos (fondo violeta oscuro, texto grande
-blanco con la palabra clave resaltada, íconos y mini escenas de interfaz). Recibís el guion hablado con cada
-palabra numerada y el segundo en que se dice. Diseñás los cortes visuales que acompañan a la voz.
+PROMPT = """Sos director de motion graphics de reels verticales explicativos. Recibís el guion hablado con cada
+palabra numerada y el segundo en que se dice, el FORMATO narrativo del reel y el ESTILO visual activo (paleta,
+tipografía y fondo propios: las plantillas se adaptan solas). Diseñás los cortes visuales que acompañan a la voz.
 
 Plantillas disponibles (campo "plantilla"):
 - titular: texto grande. "textos": 1 a 3 líneas cortas (máx 28 caracteres c/u). "icono" obligatorio. Es la base del gancho y del remate.
-- pasos: lista numerada. "textos": 2 o 3 pasos de máx 4 palabras. Para procesos ("elige, se arma, te llega").
-- flujo: cajas con flechas. "textos": 2 o 3 cajas de máx 3 palabras (ej. "Tu negocio", "Catálogo web", "Tu plata"). Opcional "iconos": un icono por caja. La última caja es la que se destaca. Para transformaciones, antes -> después, causa -> efecto.
+- pasos: lista numerada. "textos": 2 o 3 pasos de máx 4 palabras. Para procesos ("elige, se arma, te llega") y tutoriales.
+- flujo: cajas con flechas. "textos": 2 o 3 cajas de máx 3 palabras (ej. "Tu negocio", "Catálogo web", "Tu plata"). Opcional "iconos": un icono por caja. La última caja se destaca. Para transformaciones, causa -> efecto.
 - dato: número grande. "textos": [valor, etiqueta]. El valor es corto ("24 a 72 hs", "30.000", "0 comisiones"), la etiqueta máx 5 palabras. SOLO con cifras que están en el brief o en el guion; jamás inventes números.
-- chat: conversación de WhatsApp. "textos": 2 a 4 mensajes alternados (1.º cliente, 2.º el negocio, etc.), máx 6 palabras c/u. El último mensaje (si es del negocio) se destaca.
-- grafico: barras que suben. "textos": [título corto, etiqueta1, etiqueta2, (etiqueta3), (etiqueta4)], etiquetas de 1 o 2 palabras (ej. días, pasos, etapas). Sin cifras ni porcentajes. No lo uses para prometer resultados.
+- chat: conversación de WhatsApp. "textos": 2 a 4 mensajes alternados (1.º cliente, 2.º el negocio, etc.), máx 6 palabras c/u.
+- grafico: barras que suben. "textos": [título corto, etiqueta1, etiqueta2, (etiqueta3), (etiqueta4)], etiquetas de 1 o 2 palabras. Sin cifras ni porcentajes.
+- mito: mito tachado y la verdad abajo. "textos": [el mito (máx 8 palabras), la verdad (máx 10 palabras)].
+- antes_despues: panel partido. "textos": [cómo era antes (máx 8 palabras), cómo es ahora (máx 8 palabras)].
+- ticket: ticket que se imprime. "textos": [encabezado corto, 1 a 3 renglones "detalle | valor", total "Total | valor"]. Sin precios reales inventados: usá cantidades o pedidos ("Pedido 1 | armado").
+- celdas: planilla con celdas que se llenan. "textos": 2 a 5 filas "etiqueta | valor" (la primera puede ser el encabezado). Sin cifras de ventas inventadas.
 
 Reglas:
-- Cada escena tiene "desde": el NÚMERO de la primera palabra del guion con la que arranca. La primera escena arranca en 0.
-- Entre 7 y 10 escenas para ~20 s. Cada escena dura entre 1,5 y 3 s (mirá los segundos de cada palabra): NINGUNA puede durar más de 3 s,
-  o sea que el "desde" de la escena siguiente tiene que estar a menos de 3 s del de la actual. Una frase larga se reparte en 2 escenas.
-- Ritmo por beats: gancho (titular, ya en el primer segundo) -> problema -> giro -> solución mortups -> cierre. Variá las plantillas: no repitas la misma dos veces seguidas y usá al menos 4 distintas.
+- Cada escena tiene "desde": el NÚMERO de la primera palabra del guion con la que arranca. La primera escena arranca en 0 y es el gancho, visible desde el primer cuadro.
+- Una escena cada ~2 a 2,8 s (para una voz de ~34 s son entre 12 y 16 escenas). NINGUNA puede durar más de 3 s: el "desde" de la escena siguiente tiene que estar a menos de 3 s del de la actual. Una frase larga se reparte en 2 escenas.
+- Seguí el FORMATO: usá las plantillas que se sugieren para ese formato. Variá: no repitas la misma plantilla dos veces seguidas y usá al menos 5 distintas.
 - La escena del remate (la frase justo después de una pausa "...") es una escena propia, limpia y fuerte: un titular corto.
+- Quien habla es una sola persona (Lautaro): los textos del negocio y de la marca van en primera persona del singular ("te armo", "te lo preparo"), nunca "armamos", "preparamos" ni "sincronizamos".
 - Los textos en pantalla resumen o refuerzan lo que se dice, no copian la frase entera. Español rioplatense con voseo, ortografía perfecta con tildes, sin emojis, sin números de teléfono.
-- "resaltar": lista de 1 o 2 palabras (exactas, tal como están en "textos") para pintar en amarillo.
+- "resaltar": lista de 1 o 2 palabras (exactas, tal como están en "textos") para destacar.
 - "icono": uno de esta lista exacta: {iconos}
 
 Respondé SOLO con este JSON:
@@ -65,8 +76,8 @@ def _validar_esquema(d, palabras, dur_voz: float) -> list[dict]:
     """Valida el JSON del modelo contra el esquema y los tiempos. Corrige lo menor; falla en lo grave."""
     iconos = set(animado.iconos_disponibles())
     esc = d.get("escenas") if isinstance(d, dict) else None
-    if not isinstance(esc, list) or not 4 <= len(esc) <= 12:
-        raise EscenasError("tiene que haber entre 4 y 12 escenas")
+    if not isinstance(esc, list) or not 4 <= len(esc) <= 20:
+        raise EscenasError("tiene que haber entre 4 y 20 escenas")
     out, previo = [], -1
     for i, e in enumerate(esc):
         if not isinstance(e, dict):
@@ -120,7 +131,7 @@ def _partir(esc: list[dict], palabras, dur_voz: float) -> list[dict]:
         t0 = palabras[ini_i].inicio
         t1 = palabras[fin_i].inicio if fin_i < len(palabras) else dur_voz
         n = int((t1 - t0) / MAX_SEG) + (1 if (t1 - t0) % MAX_SEG > 0.4 else 0)
-        if t1 - t0 <= MAX_SEG + 0.2 or n < 2:
+        if t1 - t0 <= MAX_SEG + 0.1 or n < 2:
             continue
         cortes = []
         for j in range(1, n):
@@ -164,8 +175,12 @@ def generar(cfg: Config, datos: dict, palabras, dur_voz: float) -> tuple[list[di
     """Devuelve (escenas, tramos[(ini, fin)], origen). origen: 'llm' o 'fallback'."""
     brief = cfg.marca.read_text(encoding="utf-8")
     sistema = PROMPT.format(iconos=", ".join(animado.iconos_disponibles())) + "\n\nBrief de la marca:\n" + brief
+    fmt = datos.get("formato")
+    sug = guion.FORMATOS.get(fmt, {}).get("escenas", "")
     usuario = ("Guion (número, segundo, palabra):\n" + _guion_numerado(palabras) +
-               f"\n\nDuración de la voz: {dur_voz:.1f} s. Título del reel: {datos.get('titulo', '')}")
+               f"\n\nDuración de la voz: {dur_voz:.1f} s. Título del reel: {datos.get('titulo', '')}"
+               f"\nFORMATO: {fmt or 'libre'}. Escenas sugeridas: {sug}"
+               f"\nESTILO visual: {datos.get('estilo_visual', '')}")
     error = ""
     for intento in range(2):
         pedido = usuario if not error else (

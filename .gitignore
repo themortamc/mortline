@@ -16,3 +16,6 @@ music/*
 *.mp4
 *.wav
 !assets/**
+
+# Material de trabajo de cada reel (guion, voz, créditos); el reel final va a ~/Downloads/job/reels
+data/trabajo/

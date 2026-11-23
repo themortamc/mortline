@@ -48,21 +48,47 @@ def alinear(cfg: Config, audio: Path, escenas: list[str]) -> list[Palabra]:
     # El modelo se guarda dentro del repo (carpeta modelos/, fuera de git: se baja solo la primera vez).
     modelo = WhisperModel(cfg.whisper_modelo, device="cpu", compute_type="int8",
                           download_root=str(cfg.datos.parent / "modelos"))
-    segmentos, _ = modelo.transcribe(
-        muestras,
-        language="es",
-        word_timestamps=True,
-        initial_prompt=" ".join(escenas),
-        vad_filter=False,
-    )
-    oidas = [w for s in segmentos for w in (s.words or [])]
-
+    dur = len(muestras) / 16000
     guion: list[tuple[str, int]] = []
     for i, escena in enumerate(escenas):
         for tok in escena.replace("...", " ").split():
             if _norm(tok):
                 guion.append((tok, i))
 
+    # Whisper a veces estira los tiempos (se vio una vez con la máquina cargada): se valida y se reintenta;
+    # si no hay forma, se reparten las palabras en proporción a su largo (siempre sincroniza con el audio).
+    for intento in range(2):
+        segmentos, _ = modelo.transcribe(
+            muestras, language="es", word_timestamps=True, vad_filter=False,
+            initial_prompt=" ".join(escenas) if intento == 0 else None,
+            condition_on_previous_text=intento == 0,
+        )
+        oidas = [w for s in segmentos for w in (s.words or [])]
+        palabras = _emparejar(guion, oidas)
+        if _plausible(palabras, dur):
+            return palabras
+    print("   (Whisper dio tiempos raros: reparto las palabras en proporción al audio)")
+    pesos = [len(t) + 2 for t, _ in guion]
+    util = max(oidas[-1].end if oidas else dur, 1.0) if _plausible_final(oidas, dur) else dur - 0.3
+    acum, out = 0.0, []
+    for (t, esc), pw in zip(guion, pesos):
+        out.append(Palabra(t, util * acum / sum(pesos), util * (acum + pw) / sum(pesos), esc))
+        acum += pw
+    return out
+
+
+def _plausible_final(oidas, dur: float) -> bool:
+    return bool(oidas) and oidas[-1].end >= dur - 4
+
+
+def _plausible(palabras: list[Palabra], dur: float) -> bool:
+    """Tiempos creíbles: la primera palabra arranca al principio, ninguna pausa pasa de 2,5 s y la última cierra cerca del final."""
+    if not palabras or palabras[0].inicio > 2.0 or palabras[-1].fin < dur - 5:
+        return False
+    return all(b.inicio - a.inicio <= 2.5 for a, b in zip(palabras, palabras[1:]))
+
+
+def _emparejar(guion: list[tuple[str, int]], oidas) -> list[Palabra]:
     a = [_norm(t) for t, _ in guion]
     b = [_norm(w.word) for w in oidas]
     tiempos: list[tuple[float, float] | None] = [None] * len(guion)
@@ -129,7 +155,8 @@ def _limpio(t: str) -> str:
     return re.sub(r"[,;.]$", "", t).replace("{", "(").replace("}", ")")
 
 
-def escribir_ass(palabras: list[Palabra], destino: Path, hasta: float, titulo: str = "") -> None:
+def escribir_ass(palabras: list[Palabra], destino: Path, hasta: float, titulo: str = "",
+                 estilo: str | None = None) -> None:
     """Un evento por palabra: el grupo visible con la palabra que se dice en violeta y con 'pop'."""
     cab = f"""[Script Info]
 ScriptType: v4.00+
@@ -146,6 +173,17 @@ Style: Titulo,Hanken Grotesk ExtraBold,88,{BLANCO},{BLANCO},{VIOLETA},{VIOLETA},
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
+    activo, pos_txt, max_chars = VIOLETA, r"{\an5\pos(540,1180)}", 16
+    if estilo:  # modo animado: el estilo visual manda (fuente, colores, ubicación en zona segura)
+        from . import temas
+
+        a = temas.ESTILOS[estilo]["ass"]
+        activo, max_chars = temas._ass(a["activo"]), a["max_chars"]
+        pos_txt = r"{\an5\pos(500,1420)}"
+        cab = re.sub(r"Style: Sub,[^\n]*", lambda _: temas.estilo_ass(estilo), cab, count=1)
+        texto_base = temas._ass(a["texto"])
+    else:
+        texto_base = BLANCO
     lineas = []
     if titulo:
         # Gancho visual desde el primer cuadro: caja blanca arriba, los primeros 3 segundos.
@@ -169,7 +207,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 txt = _limpio(q.texto)
                 if m == k:
                     partes.append(
-                        r"{\c" + VIOLETA + r"\fscx112\fscy112\t(0,90,\fscx100\fscy100)}" + txt + r"{\c" + BLANCO + r"\fscx100\fscy100}"
+                        r"{\c" + activo + r"\fscx112\fscy112\t(0,90,\fscx100\fscy100)}" + txt + r"{\c" + texto_base + r"\fscx100\fscy100}"
                     )
                 else:
                     partes.append(txt)

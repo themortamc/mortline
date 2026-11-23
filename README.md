@@ -59,8 +59,8 @@ Cada decisión de edición sale de cómo rankean hoy Reels, TikTok y Shorts: **w
 
 - **Gancho doble desde el cuadro 1**: título en caja blanca arriba + voz que arranca sin silencio.
 - **Cortes cada ~2,4 s**: nunca más de 3 s con la misma imagen.
-- **~20 segundos**: más corto = más gente lo ve completo.
-- **Subtítulos quemados** palabra por palabra con la palabra activa en violeta `#8B2CFF` (mucha gente mira sin sonido).
+- **30 a 40 segundos** (mínimo 30 s de voz; si el guion queda corto se reescribe, hasta 2 veces, y si no llega hay error: nunca se rellena con silencio).
+- **Subtítulos quemados** palabra por palabra, con la palabra activa en el color de acento del estilo (mucha gente mira sin sonido).
 - **Placa final corta** (1,3 s) con logo, WhatsApp y web.
 - **Caption con palabras que se buscan** ("catálogo web para ferretería") + invitación a mandárselo a otro comerciante (los envíos pesan mucho para llegar a no seguidores).
 - **Variedad automática** de rubro, formato, gancho, clips y música: las plataformas castigan el contenido repetitivo y "no original".
@@ -95,27 +95,33 @@ mortline "cómo dejar de pasar precios por audio"   # tema libre
 mortline --cantidad 5            # tanda de 5 reels distintos
 mortline --voz Kore              # otra voz (Puck, Fenrir, Charon, Kore, Zephyr)
 mortline --estilo stock          # clips de stock en vez de motion graphics (el default es animado)
-mortline --rehacer <carpeta>     # rehace imágenes y video con la misma voz y guion
+mortline --estilo-visual neon --formato mito-verdad   # elegir estilo y formato (si no, rotan solos)
+mortline --rehacer "Título del reel"   # rehace imágenes y video con la misma voz y guion (título o carpeta)
 mortline historial               # lo que ya se hizo
 ```
 
-Cada reel queda en `~/Downloads/job/reels/<fecha>_<tema>/` (se cambia con `MORTLINE_SALIDA`):
+Cada reel queda en `~/Downloads/job/reels/<Título>/` (se cambia con `MORTLINE_SALIDA`; si el título existe, `<Título> (2)`):
 
 ```
 <Título>.mp4   el video con el nombre de su título · 1080×1920 · H.264 + AAC · listo para subir
 caption.txt    texto + hashtags para la publicación
-guion.json     guion, título, búsquedas
-voz.wav        locución sola
-creditos.txt   de dónde salió cada clip y la música
 portada.jpg    tapa para la grilla del perfil (título dentro del recorte 3:4)
 ```
 
+El material de trabajo (`guion.json`, `voz.wav`, `creditos.txt`) queda aparte en `data/trabajo/<fecha>_<tema>/` (fuera de git).
+
 ## Estilo animado (por defecto)
 
-Reels de motion graphics sobre fondo violeta con partículas, texto grande con la palabra clave resaltada, íconos y
-mini escenas. Las plantillas viven en [`mortline/animado/escena.html`](mortline/animado/escena.html) (HTML/CSS/JS, 1080×1920,
+Reels de motion graphics. Las plantillas viven en [`mortline/animado/escena.html`](mortline/animado/escena.html) (HTML/CSS/JS, 1080×1920,
 30 fps) y se pintan **cuadro a cuadro** con Chromium headless (Playwright): Python fija el tiempo con `frame(t)`, así el
-resultado es determinista y se junta con ffmpeg. Sin GPU, unos 30–45 s de render por reel.
+resultado es determinista y se junta con ffmpeg. Sin GPU, 1 a 2 minutos de render por reel.
+
+**8 estilos visuales** ([`mortline/temas.py`](mortline/temas.py)), cada uno con su paleta, tipografía, fondo, lenguaje de movimiento y
+subtítulos: `cuaderno`, `pizarra`, `editorial`, `ticket`, `planilla`, `neon`, `pop`, `minimal`. Rotan solos y no se repiten en los
+últimos 4 reels (`--estilo-visual X` lo fuerza). El violeta de la marca queda solo en la placa final.
+
+**8 formatos narrativos** ([`mortline/guion.py`](mortline/guion.py)): `problema-solucion`, `mito-verdad`, `top3-errores`, `cliente-tipo`,
+`antes-despues`, `tutorial-3-pasos`, `dato-sorprendente`, `pregunta`. También rotan sin repetir los últimos 4 (`--formato Y`).
 
 | Plantilla | Para qué |
 |---|---|
@@ -125,6 +131,10 @@ resultado es determinista y se junta con ffmpeg. Sin GPU, unos 30–45 s de rend
 | `dato` | número grande que sube con aro de progreso (solo cifras reales del brief) |
 | `chat` | celular con conversación de WhatsApp |
 | `grafico` | barras que crecen con línea de tendencia (sin cifras) |
+| `mito` | el mito tachado palabra por palabra y la verdad abajo |
+| `antes_despues` | panel partido: antes apagado, ahora con el acento del estilo |
+| `ticket` | ticket térmico que se imprime de a tiras |
+| `celdas` | planilla con celdas que se llenan y selección que salta |
 
 Después de la voz, el LLM devuelve las escenas como JSON `[{desde, plantilla, textos, icono, resaltar}]`
 (`desde` = número de palabra del guion); [`mortline/escenas.py`](mortline/escenas.py) lo valida, reintenta una vez y, si
@@ -138,7 +148,8 @@ Primera vez: `uv run playwright install chromium`.
 |---|---|
 | Código, marca, música CC0 | este repo |
 | Historial (para no repetir temas, ganchos ni clips) | `data/historial.json`, se sube solo a GitHub después de cada reel |
-| Reels terminados | `MORTLINE_SALIDA` (por defecto `~/Downloads/job/reels`) |
+| Reels terminados | `MORTLINE_SALIDA` (por defecto `~/Downloads/job/reels`), una carpeta por título |
+| Guion, voz y créditos de cada reel | `data/trabajo/` (fuera de git; lo usa `--rehacer`) |
 | Modelo de Whisper | `modelos/` (fuera de git, se baja solo la primera vez) |
 | Claves | `.env` (fuera de git; copiá `.env.example`) |
 
@@ -156,6 +167,6 @@ Los clips descargados no se guardan: se borran al terminar cada reel.
 
 - Código: MIT.
 - Íconos: Lucide (ISC, licencia en `mortline/animado/iconos/LICENSE-lucide.txt`).
-- Fuente: [Hanken Grotesk](https://fonts.google.com/specimen/Hanken+Grotesk) (SIL Open Font License), instanciada en ExtraBold y SemiBold.
+- Fuentes (SIL Open Font License, en `assets/fonts/`): Hanken Grotesk, Poppins, DM Serif Display, Bungee, Lilita One, Caveat Brush, Patrick Hand, Gaegu, Courier Prime y Space Mono.
 - Clips y música: de bancos libres; cada reel guarda sus fuentes en `creditos.txt`.
 - Logo de mortups: marca registrada de su dueño, no incluida en la licencia MIT.

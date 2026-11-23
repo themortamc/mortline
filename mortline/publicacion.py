@@ -97,20 +97,31 @@ def _cuadro_fondo(materiales, trabajo: Path) -> Path | None:
     return None
 
 
-def portada(cfg: Config, datos: dict, materiales, destino: Path, trabajo: Path, fondo: Path | None = None) -> None:
+def portada(cfg: Config, datos: dict, materiales, destino: Path, trabajo: Path, fondo: Path | None = None,
+            estilo: str | None = None) -> None:
     """Portada 1080×1920 para la grilla: el título grande dentro del recorte 3:4 que muestra el perfil."""
     from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
     W, H = 1080, 1920
     fondo_path = fondo or _cuadro_fondo(materiales, trabajo)
-    if fondo_path:
+    if estilo and fondo_path:  # animado: el fondo del estilo tal cual, sin teñir de violeta
+        img = Image.open(fondo_path).convert("RGB")
+    elif fondo_path:
         img = Image.open(fondo_path).convert("RGB").filter(ImageFilter.GaussianBlur(3))
         img = Image.blend(img, Image.new("RGB", (W, H), (14, 10, 22)), 0.55)
     else:
         img = Image.new("RGB", (W, H), (14, 10, 22))
     d = ImageDraw.Draw(img)
-    fuerte = ImageFont.truetype(str(cfg.assets / "fonts" / "HankenGrotesk-ExtraBold.ttf"), 118)
-    media = ImageFont.truetype(str(cfg.assets / "fonts" / "HankenGrotesk-SemiBold.ttf"), 50)
+    caja, texto_caja, color_sub = (139, 44, 255), "white", (230, 222, 245)
+    arch_t, arch_s, tam = "HankenGrotesk-ExtraBold.ttf", "HankenGrotesk-SemiBold.ttf", 118
+    if estilo:
+        from .temas import FUENTES, VISUAL
+
+        v = VISUAL[estilo]
+        caja, texto_caja, color_sub = v["acc"], v["onacc"], v["mut"]
+        arch_t, arch_s, tam = FUENTES[v["df"]], FUENTES["PoppinsM"], int(118 * v["esc"])
+    fuerte = ImageFont.truetype(str(cfg.assets / "fonts" / arch_t), tam)
+    media = ImageFont.truetype(str(cfg.assets / "fonts" / arch_s), 50)
 
     titulo = (datos.get("titulo") or datos.get("gancho") or "").strip()
     palabras, lineas, actual = titulo.split(), [], ""
@@ -123,15 +134,15 @@ def portada(cfg: Config, datos: dict, materiales, destino: Path, trabajo: Path, 
             actual = p
     if actual:
         lineas.append(actual)
-    alto_linea, pad = 150, 26
+    alto_linea, pad = int(150 * tam / 118), 26
     total = len(lineas) * alto_linea
     y = (H - total) // 2 - 60  # centrado dentro del recorte 3:4 de la grilla (y 240–1680)
     for linea in lineas:
         ancho = d.textlength(linea, font=fuerte)
         x = (W - ancho) / 2
-        d.rounded_rectangle((x - pad, y - 8, x + ancho + pad, y + alto_linea - 22), radius=18, fill=(139, 44, 255))
-        d.text((x, y - 4), linea, font=fuerte, fill="white")
+        d.rounded_rectangle((x - pad, y - 8, x + ancho + pad, y + alto_linea - 22), radius=18, fill=caja)
+        d.text((x, y - 4), linea, font=fuerte, fill=texto_caja)
         y += alto_linea
     sub = "mortups.com.ar"
-    d.text(((W - d.textlength(sub, font=media)) / 2, y + 40), sub, font=media, fill=(230, 222, 245))
+    d.text(((W - d.textlength(sub, font=media)) / 2, y + 40), sub, font=media, fill=color_sub)
     img.save(destino, quality=92)
