@@ -115,6 +115,8 @@ Reglas del guion (pensadas para el algoritmo de Reels/TikTok/Shorts: que lo vean
 - La primera escena es el gancho hablado: máximo 10 palabras, concreto del rubro, que genere curiosidad o
   identificación inmediata ("me pasa"). Nada de saludos ni presentaciones ("Hola, soy...").
 - 4 a 6 escenas. Cada escena es 1 o 2 frases cortas. Cada escena aporta algo nuevo: no rellenes.
+- Estructura por beats: gancho -> problema -> giro -> solución con mortups -> cierre (el llamado).
+  Antes del remate o del giro poné una pausa con "..." (el silencio hace que se escuche mejor).
 - Tiene que ser útil o muy identificable, algo que el dueño quiera mandarle a otro comerciante.
 - La última escena es el llamado que se indica en el pedido (uno solo). Corta y firme.
 - Usá "..." para marcar una pausa natural de respiración (máximo 3 en todo el guion).
@@ -176,7 +178,7 @@ def elegir_combo(hist: Historial, rubro: str | None = None) -> tuple[str, str, s
     if not opciones:
         raise RuntimeError("Ya se hicieron todas las combinaciones de tema. Pasale un tema a mano.")
     # Preferir rubros y formatos que se usaron menos últimamente.
-    recientes = [x["combo"].split("/") for x in hist.reels[-15:] if x.get("combo")]
+    recientes = [c for c in (x["combo"].split("/") for x in hist.reels[-15:] if x.get("combo")) if len(c) == 3]
     def peso(o):
         return 1 + sum(o[0] == x[0] for x in recientes) * 2 + sum(o[2] == x[2] for x in recientes)
     minimo = min(peso(o) for o in opciones)
@@ -188,7 +190,7 @@ def contar_palabras(datos: dict) -> int:
 
 
 def escribir(cfg: Config, hist: Historial, tema: str | None = None, rubro: str | None = None,
-             producto: str | None = None) -> dict:
+             producto: str | None = None, estilo: str = "stock") -> dict:
     brief = cfg.marca.read_text(encoding="utf-8")
     combo = None
     if producto:
@@ -225,7 +227,7 @@ def escribir(cfg: Config, hist: Historial, tema: str | None = None, rubro: str |
             f"Este guion tiene {n} palabras; dejalo entre 45 y 65 sin perder el gancho:\n" + _dump(datos),
             temperature=0.4,
         )
-    _validar(datos)
+    _validar(datos, estilo)
     if producto:
         # Cierre fijo y coherente con la placa; capturas nunca en la primera ni en la última escena.
         datos["escenas"][-1]["texto"] = CIERRES_PRODUCTO[len(hist.reels) % len(CIERRES_PRODUCTO)]
@@ -258,11 +260,13 @@ def _dump(d: dict) -> str:
     return json.dumps(d, ensure_ascii=False)
 
 
-def _validar(d: dict) -> None:
+def _validar(d: dict, estilo: str = "stock") -> None:
     if not isinstance(d.get("escenas"), list) or len(d["escenas"]) < 3:
         raise llm.LLMError("El guion vino sin escenas suficientes.")
     for e in d["escenas"]:
-        if not e.get("texto") or not e.get("buscar"):
+        if estilo == "animado":
+            e.setdefault("buscar", "")  # el estilo animado no usa clips de stock
+        if not e.get("texto") or (estilo != "animado" and not e.get("buscar")):
             raise llm.LLMError("Hay una escena sin texto o sin búsqueda.")
     d.setdefault("tema", d["escenas"][0]["texto"])
     d["gancho"] = d["escenas"][0]["texto"]

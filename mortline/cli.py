@@ -20,7 +20,7 @@ import unicodedata
 from datetime import datetime
 from pathlib import Path
 
-from . import clips, guion, musica, publicacion, subtitulos, video, voz
+from . import animado, clips, escenas, guion, musica, publicacion, subtitulos, video, voz
 from .config import Config, cargar
 from .historial import Historial
 
@@ -56,21 +56,23 @@ def _recortar_silencio(entrada: Path, salida: Path) -> None:
 
 
 def hacer_reel(cfg: Config, hist: Historial, tema: str | None, rubro: str | None,
-               voz_nombre: str | None, con_musica: bool, producto: str | None = None) -> Path:
+               voz_nombre: str | None, con_musica: bool, producto: str | None = None,
+               estilo: str = "animado") -> Path:
     t0 = time.time()
     _paso(1, "Escribiendo el guion con FreeLLMAPI…")
-    datos = guion.escribir(cfg, hist, tema=tema, rubro=rubro, producto=producto)
+    datos = guion.escribir(cfg, hist, tema=tema, rubro=rubro, producto=producto, estilo=estilo)
     print(f"   Tema: {datos['tema']}\n   Gancho: {datos['gancho']}\n   Llamado: {datos['cta']}")
 
     carpeta = cfg.salida / f"{datetime.now():%Y-%m-%d_%H%M}_{_slug(datos['tema'])}"
     try:
-        return _armar(cfg, hist, datos, carpeta, voz_nombre, con_musica, producto, t0)
+        return _armar(cfg, hist, datos, carpeta, voz_nombre, con_musica, producto, t0, estilo=estilo)
     except BaseException:
         shutil.rmtree(carpeta, ignore_errors=True)  # no dejar reels a medio hacer
         raise
 
 
-def _armar(cfg, hist, datos, carpeta, voz_nombre, con_musica, producto, t0, rehacer=False) -> Path:
+def _armar(cfg, hist, datos, carpeta, voz_nombre, con_musica, producto, t0, rehacer=False,
+           estilo="animado") -> Path:
     trabajo = carpeta / ".trabajo"
     trabajo.mkdir(parents=True, exist_ok=True)
     (carpeta / "guion.json").write_text(json.dumps(datos, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -91,54 +93,89 @@ def _armar(cfg, hist, datos, carpeta, voz_nombre, con_musica, producto, t0, reha
     palabras = subtitulos.alinear(cfg, audio, textos)
     tramos = subtitulos.tramos_escenas(palabras, len(textos), dur_voz)
 
-    _paso(4, f"Buscando clips libres en {clips.proveedor(cfg)}…")
-    usados = hist.clips_usados()
-    materiales, creditos = [], []
-    caps = clips.capturas(cfg, producto, trabajo / "capturas") if producto else []
-    n_cap = 0
-    for (ini, fin), escena in zip(tramos, datos["escenas"]):
-        n = video.tomas_por_escena(fin - ini)
-        if escena["buscar"].strip().upper() == "CAPTURA" and caps:
-            mats = [caps[(n_cap + j) % len(caps)] for j in range(min(n, len(caps)))]
-            n_cap += 1
+    if estilo == "animado":
+        _paso(4, "Diseñando las escenas animadas con FreeLLMAPI…")
+        if rehacer and datos.get("visuales"):
+            visuales, origen = datos["visuales"], "guardadas"
+            tr_vis = escenas.tiempos(visuales, palabras, dur_voz)
+        else:
+            visuales, tr_vis, origen = escenas.generar(cfg, datos, palabras, dur_voz)
+        datos["visuales"] = visuales
+        (carpeta / "guion.json").write_text(json.dumps(datos, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"   {len(visuales)} escenas ({origen}): " + ", ".join(v["plantilla"] for v in visuales))
+        materiales, creditos = [], []
+    else:
+        _paso(4, f"Buscando clips libres en {clips.proveedor(cfg)}…")
+        usados = hist.clips_usados()
+        materiales, creditos = [], []
+        caps = clips.capturas(cfg, producto, trabajo / "capturas") if producto else []
+        n_cap = 0
+        for (ini, fin), escena in zip(tramos, datos["escenas"]):
+            n = video.tomas_por_escena(fin - ini)
+            if escena["buscar"].strip().upper() == "CAPTURA" and caps:
+                mats = [caps[(n_cap + j) % len(caps)] for j in range(min(n, len(caps)))]
+                n_cap += 1
+                materiales.append(mats)
+                creditos += [m.credito for m in mats]
+                print(f"   «captura de la planilla»: {len(mats)} imagen(es)")
+                continue
+            if escena["buscar"].strip().upper() == "CAPTURA":
+                escena["buscar"] = "small business owner laptop"
+            mats = clips.buscar(cfg, escena["buscar"], n, (fin - ini) / n + 1, usados, trabajo / "clips")
+            if not mats:
+                mats = clips.buscar(cfg, "small business shop", n, 3, usados, trabajo / "clips")
+            if not mats and materiales:
+                mats = materiales[-1]
+            if not mats:
+                raise RuntimeError(f"No encontré material para «{escena['buscar']}».")
+            usados |= {m.id for m in mats}
             materiales.append(mats)
             creditos += [m.credito for m in mats]
-            print(f"   «captura de la planilla»: {len(mats)} imagen(es)")
-            continue
-        if escena["buscar"].strip().upper() == "CAPTURA":
-            escena["buscar"] = "small business owner laptop"
-        mats = clips.buscar(cfg, escena["buscar"], n, (fin - ini) / n + 1, usados, trabajo / "clips")
-        if not mats:
-            mats = clips.buscar(cfg, "small business shop", n, 3, usados, trabajo / "clips")
-        if not mats and materiales:
-            mats = materiales[-1]
-        if not mats:
-            raise RuntimeError(f"No encontré material para «{escena['buscar']}».")
-        usados |= {m.id for m in mats}
-        materiales.append(mats)
-        creditos += [m.credito for m in mats]
-        print(f"   «{escena['buscar']}»: {len(mats)} clip(s)")
+            print(f"   «{escena['buscar']}»: {len(mats)} clip(s)")
 
     tema_musical = musica.elegir(cfg.musica) if con_musica else None
 
     _paso(5, "Armando el video (cortes, placa final, música, subtítulos)…")
     inicio_placa = video.cuando_placa(tramos, dur_voz)
     ass = trabajo / "subtitulos.ass"
-    subtitulos.escribir_ass(palabras, ass, hasta=inicio_placa, titulo=datos.get("titulo", ""))
     reel = carpeta / f"{nombre_archivo(datos)}.mp4"
     for viejo in carpeta.glob("*.mp4"):  # al rehacer, no dejar el video anterior con otro nombre
         if viejo != reel:
             viejo.unlink()
-    total = video.armar(
-        tramos=tramos, materiales=materiales, voz=audio, dur_voz=dur_voz, ass=ass,
-        musica=tema_musical, assets=cfg.assets, llamado=guion.CTAS[datos['cta']]['placa'], web=cfg.web,
-        precio=_precio_txt(cfg, producto),
-        trabajo=trabajo, salida=reel,
-    )
+    if estilo == "animado":
+        subtitulos.escribir_ass(palabras, ass, hasta=inicio_placa, titulo="")
+        total = dur_voz + video.COLA
+        lista = []
+        for v, (ini, fin) in zip(visuales, tr_vis):
+            if lista and ini >= inicio_placa - 0.4:
+                break  # la placa final tapa lo que queda
+            lista.append({**v, "ini": ini, "fin": fin})
+        lista[-1]["fin"] = inicio_placa
+        placa = {"ini": inicio_placa, "llamado": guion.CTAS[datos["cta"]]["placa"], "web": cfg.web,
+                 "precio": _precio_txt(cfg, producto)}
+        t_r = time.time()
+        mudo = trabajo / "mudo.mp4"
+        desb = animado.renderizar(lista, placa, total, cfg.assets, trabajo, mudo,
+                                  cuadro_portada=(-0.5, trabajo / "portada_fondo.jpg"))
+        print(f"   Render de {total * animado.FPS:.0f} cuadros en {time.time() - t_r:.0f} s")
+        for d in desb[:6]:
+            print(f"   ⚠ posible desborde: {d}")
+        total = video.mezclar(mudo=mudo, voz=audio, ass=ass, musica=tema_musical, assets=cfg.assets,
+                              trabajo=trabajo, salida=reel, total=total)
+    else:
+        subtitulos.escribir_ass(palabras, ass, hasta=inicio_placa, titulo=datos.get("titulo", ""))
+        total = video.armar(
+            tramos=tramos, materiales=materiales, voz=audio, dur_voz=dur_voz, ass=ass,
+            musica=tema_musical, assets=cfg.assets, llamado=guion.CTAS[datos['cta']]['placa'], web=cfg.web,
+            precio=_precio_txt(cfg, producto),
+            trabajo=trabajo, salida=reel,
+        )
 
     _paso(6, "Guardando caption, créditos e historial…")
     (carpeta / "caption.txt").write_text(publicacion.caption(cfg, datos, producto), encoding="utf-8")
-    publicacion.portada(cfg, datos, materiales, carpeta / "portada.jpg", trabajo)
+    fondo = trabajo / "portada_fondo.jpg"
+    publicacion.portada(cfg, datos, materiales, carpeta / "portada.jpg", trabajo,
+                        fondo=fondo if estilo == "animado" and fondo.exists() else None)
     if tema_musical:
         creditos.append(f"Música: {tema_musical.name}")
     (carpeta / "creditos.txt").write_text("\n".join(dict.fromkeys(creditos)) + "\n", encoding="utf-8")
@@ -149,7 +186,7 @@ def _armar(cfg, hist, datos, carpeta, voz_nombre, con_musica, producto, t0, reha
     hist.agregar({
         "combo": datos.get("combo"), "tema": datos["tema"], "gancho": datos["gancho"],
         "titulo": datos.get("titulo", ""), "cta": datos["cta"], "voz": voz_nombre or cfg.voz,
-        "clips": sorted({m.id for ms in materiales for m in ms}), "duracion": total,
+        "clips": sorted({m.id for ms in materiales for m in ms}), "duracion": total, "estilo": estilo,
         "carpeta": str(carpeta),
     })
     _guardar_en_github()
@@ -196,6 +233,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--voz", choices=["Puck", "Fenrir", "Charon", "Kore", "Zephyr"], help="voz de GGNarrator")
     ap.add_argument("--cantidad", type=int, default=1, help="cuántos reels hacer seguidos")
     ap.add_argument("--sin-musica", action="store_true", help="sin música de fondo")
+    ap.add_argument("--estilo", choices=["animado", "stock"], default="animado",
+                    help="animado: motion graphics propios (por defecto); stock: clips de bancos libres")
     ap.add_argument("--rehacer", help="carpeta de un reel ya hecho: rehace imágenes y video con la misma voz y guion")
     ap.add_argument("--producto", help="reel de un producto digital de la tienda (slug, ej: calculadora-de-precios)")
     args = ap.parse_args(argv)
@@ -208,7 +247,7 @@ def main(argv: list[str] | None = None) -> int:
         datos.setdefault("cta", "whatsapp")
         datos.setdefault("gancho", datos["escenas"][0]["texto"])
         producto = (datos.get("combo") or "").removeprefix("producto/") if str(datos.get("combo", "")).startswith("producto/") else None
-        _armar(cfg, hist, datos, carpeta, args.voz, not args.sin_musica, producto, time.time(), rehacer=True)
+        _armar(cfg, hist, datos, carpeta, args.voz, not args.sin_musica, producto, time.time(), rehacer=True, estilo=args.estilo)
         return 0
     if args.tema == "historial":
         _historial(hist)
@@ -218,7 +257,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.cantidad > 1:
             print(f"\n━━━ Reel {i + 1} de {args.cantidad} ━━━")
         try:
-            hacer_reel(cfg, hist, args.tema, args.rubro, args.voz, not args.sin_musica, args.producto)
+            hacer_reel(cfg, hist, args.tema, args.rubro, args.voz, not args.sin_musica, args.producto, args.estilo)
         except Exception as exc:  # seguir con el próximo si se hace una tanda
             errores += 1
             print(f"\n❌ {exc}", file=sys.stderr)

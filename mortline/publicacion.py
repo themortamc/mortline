@@ -97,12 +97,12 @@ def _cuadro_fondo(materiales, trabajo: Path) -> Path | None:
     return None
 
 
-def portada(cfg: Config, datos: dict, materiales, destino: Path, trabajo: Path) -> None:
+def portada(cfg: Config, datos: dict, materiales, destino: Path, trabajo: Path, fondo: Path | None = None) -> None:
     """Portada 1080×1920 para la grilla: el título grande dentro del recorte 3:4 que muestra el perfil."""
     from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
     W, H = 1080, 1920
-    fondo_path = _cuadro_fondo(materiales, trabajo)
+    fondo_path = fondo or _cuadro_fondo(materiales, trabajo)
     if fondo_path:
         img = Image.open(fondo_path).convert("RGB").filter(ImageFilter.GaussianBlur(3))
         img = Image.blend(img, Image.new("RGB", (W, H), (14, 10, 22)), 0.55)

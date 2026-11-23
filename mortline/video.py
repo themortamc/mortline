@@ -178,6 +178,13 @@ def armar(*, tramos: list[tuple[float, float]], materiales: list[list[Material]]
     mudo = trabajo / "mudo.mp4"
     _ff(["-f", "concat", "-safe", "0", "-i", str(lista), "-c", "copy", str(mudo)])
 
+    mezclar(mudo=mudo, voz=voz, ass=ass, musica=musica, assets=assets, trabajo=trabajo, salida=salida, total=total)
+    return math.floor(total * 100) / 100
+
+
+def mezclar(*, mudo: Path, voz: Path, ass: Path, musica: Path | None, assets: Path, trabajo: Path,
+            salida: Path, total: float) -> float:
+    """Video mudo + subtítulos quemados + voz y música (-14 LUFS). Sirve para el estilo stock y el animado."""
     fonts = assets / "fonts"
     vf = f"ass='{ass}':fontsdir='{fonts}'"
     # 1) Audio aparte y con duración fija: la música en bucle se corta en la ENTRADA (-t),

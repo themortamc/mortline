@@ -94,6 +94,8 @@ mortline --rubro ferreterias     # tema nuevo de ese rubro
 mortline "cómo dejar de pasar precios por audio"   # tema libre
 mortline --cantidad 5            # tanda de 5 reels distintos
 mortline --voz Kore              # otra voz (Puck, Fenrir, Charon, Kore, Zephyr)
+mortline --estilo stock          # clips de stock en vez de motion graphics (el default es animado)
+mortline --rehacer <carpeta>     # rehace imágenes y video con la misma voz y guion
 mortline historial               # lo que ya se hizo
 ```
 
@@ -107,6 +109,28 @@ voz.wav        locución sola
 creditos.txt   de dónde salió cada clip y la música
 portada.jpg    tapa para la grilla del perfil (título dentro del recorte 3:4)
 ```
+
+## Estilo animado (por defecto)
+
+Reels de motion graphics sobre fondo violeta con partículas, texto grande con la palabra clave resaltada, íconos y
+mini escenas. Las plantillas viven en [`mortline/animado/escena.html`](mortline/animado/escena.html) (HTML/CSS/JS, 1080×1920,
+30 fps) y se pintan **cuadro a cuadro** con Chromium headless (Playwright): Python fija el tiempo con `frame(t)`, así el
+resultado es determinista y se junta con ffmpeg. Sin GPU, unos 30–45 s de render por reel.
+
+| Plantilla | Para qué |
+|---|---|
+| `titular` | gancho y remate: texto grande que entra palabra por palabra + ícono |
+| `pasos` | lista numerada de 2 o 3 pasos |
+| `flujo` | cajas unidas por flechas (antes → después, negocio → tu plata) |
+| `dato` | número grande que sube con aro de progreso (solo cifras reales del brief) |
+| `chat` | celular con conversación de WhatsApp |
+| `grafico` | barras que crecen con línea de tendencia (sin cifras) |
+
+Después de la voz, el LLM devuelve las escenas como JSON `[{desde, plantilla, textos, icono, resaltar}]`
+(`desde` = número de palabra del guion); [`mortline/escenas.py`](mortline/escenas.py) lo valida, reintenta una vez y, si
+falla, cae a escenas simples de texto. Los cortes salen de los tiempos de Whisper y ninguno dura más de ~3 s.
+Íconos: [Lucide](https://lucide.dev) (ISC), vendorizados en `mortline/animado/iconos/`.
+Primera vez: `uv run playwright install chromium`.
 
 ## Qué se guarda dónde
 
@@ -125,11 +149,13 @@ Los clips descargados no se guardan: se borran al terminar cada reel.
 - **La marca** vive en [`marca/mortups.md`](marca/mortups.md): qué se vende, qué se puede decir, qué está prohibido y cómo habla. Cambiás ese archivo y cambian todos los guiones.
 - **Temas**: rubros, servicios y formatos están en [`mortline/guion.py`](mortline/guion.py).
 - **Música**: tirá tus mp3 en `music/` y usa esos en lugar de los CC0.
-- **Ritmo**: `TOMA` y `COLA` en [`mortline/video.py`](mortline/video.py).
+- **Ritmo**: `TOMA` y `COLA` en [`mortline/video.py`](mortline/video.py); `MAX_SEG` en [`mortline/escenas.py`](mortline/escenas.py).
+- **Plantillas nuevas**: agregá una función en `PLANTILLAS` de `escena.html` y su nombre en `escenas.PLANTILLAS`.
 
 ## Créditos y licencias
 
 - Código: MIT.
+- Íconos: Lucide (ISC, licencia en `mortline/animado/iconos/LICENSE-lucide.txt`).
 - Fuente: [Hanken Grotesk](https://fonts.google.com/specimen/Hanken+Grotesk) (SIL Open Font License), instanciada en ExtraBold y SemiBold.
 - Clips y música: de bancos libres; cada reel guarda sus fuentes en `creditos.txt`.
 - Logo de mortups: marca registrada de su dueño, no incluida en la licencia MIT.

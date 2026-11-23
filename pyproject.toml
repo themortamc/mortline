@@ -9,6 +9,7 @@ dependencies = [
     "requests>=2.32",
     "faster-whisper>=1.1",
     "pillow>=10",
+    "playwright>=1.65.2",
 ]
 
 [project.scripts]
