@@ -180,6 +180,11 @@ body.t-minimal{--hlb:#2B50FF;--hlbf:#fff;--rw:12px}
 body.t-minimal .badge{border:none;border-radius:50%;box-shadow:none}
 body.t-minimal .linea{letter-spacing:-.025em}
 body.t-minimal .pal.hl::after{height:.07em;bottom:-4px}
+/* palitos: papel, trazo negro grueso y un naranja */
+body.t-palitos{--hlb:#F26A1B;--hlbf:#fff;--rw:10px}
+body.t-palitos .badge{border-radius:50%}
+body.t-palitos .pal.hl{color:#F26A1B}
+body.t-palitos .pal.hl::after{height:.08em;bottom:-3px;background:#111}
 </style></head>
 <body>
 <div id="fondo"></div>
@@ -587,6 +592,85 @@ minimal:{
     div("","",f).style.cssText="left:50px;top:130px;width:90px;height:5px;background:#111";
   },
   anim(t){this.o.style.transform=`translate(${Math.sin(t*.5)*24}px,${Math.cos(t*.4)*18}px)`;this.p.style.transform=`translate(${Math.cos(t*.45)*30}px,${Math.sin(t*.5)*24}px)`}
+},
+palitos:{
+  // Muñeco de palitos dibujado por código: cada pose son 11 puntos + accesorios; entre escenas se interpola con resorte.
+  build(f){
+    f.style.background="radial-gradient(circle,rgba(17,17,17,.10) 1.6px,transparent 2px) 0 0/40px 40px,var(--bg)";
+    div("","",f).style.cssText="left:0;right:0;top:0;height:14px;background:#111";
+    const NS="http://www.w3.org/2000/svg";
+    const wrap=div("","",f);wrap.style.cssText="left:287px;top:84px;width:426px;height:330px";
+    wrap.innerHTML=`<svg id="mu" viewBox="-100 0 400 310" width="426" height="330" fill="none" stroke="#111" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+<path id="suelo" d="M-60 296 Q40 288 100 296 T260 294" stroke-width="6" opacity=".35"/>
+<polyline id="torso"/><polyline id="brI"/><polyline id="brD"/><polyline id="pI"/><polyline id="pD"/>
+<circle id="cab" r="27" fill="#FBF8EF"/><circle id="oi" r="3.6" fill="#111" stroke="none"/><circle id="od" r="3.6" fill="#111" stroke="none"/><path id="boca" stroke-width="5"/>
+<g id="gota" fill="#F26A1B" stroke="none"><path d="M0 0 Q-7 12 0 16 Q7 12 0 0Z"/></g>
+<g id="gota2" fill="#F26A1B" stroke="none"><path d="M0 0 Q-6 10 0 13 Q6 10 0 0Z"/></g>
+<text id="que" font-family="MarkerX" font-size="58" fill="#F26A1B" stroke="none">?</text>
+<g id="cel"><rect x="-9" y="-15" width="18" height="30" rx="4" fill="#111"/><rect x="-5" y="-11" width="10" height="20" rx="2" fill="#F26A1B" stroke="none"/></g>
+<g id="est" stroke="#F26A1B" stroke-width="6"><path id="e1"/><path id="e2"/><path id="e3"/><path id="e4"/></g>
+<g id="pun" stroke="#F26A1B" stroke-width="6"><path d="M0 -12 L8 -22"/><path d="M6 0 L18 -2"/><path d="M0 12 L8 22"/></g>
+<g id="mos"><rect x="-40" y="176" width="280" height="130" rx="6" fill="#fff"/><rect x="-40" y="176" width="280" height="20" fill="#F26A1B"/><rect x="150" y="120" width="70" height="56" rx="6" fill="#fff"/><rect x="160" y="130" width="50" height="20" fill="#111" stroke="none"/></g>
+</svg>`;
+    const q=id=>wrap.querySelector("#"+id);
+    this.R={};["torso","brI","brD","pI","pD","cab","oi","od","boca","gota","gota2","que","cel","est","e1","e2","e3","e4","pun","mos","suelo"].forEach(k=>this.R[k]=q(k));
+    // puntos: h cabeza, n cuello, c cadera, ei/mi codo y mano izq, ed/md der, ri/pi rodilla y pie izq, rd/pd der
+    const P=(h,ei,mi,ed,md,ri,pi,rd,pd,x={})=>({h,n:[h[0],h[1]+28],c:[100,172],ei,mi,ed,md,ri,pi,rd,pd,
+      m:x.m??.6,q:x.q??0,gt:x.gt??0,cel:x.cel??0,est:x.est??0,pun:x.pun??0,mos:x.mos??0,mir:x.mir??0});
+    this.POSES={
+      parado:P([100,52],[76,122],[72,168],[124,122],[128,168],[88,232],[80,292],[112,232],[120,292]),
+      pensando:P([100,54],[78,128],[116,126],[126,116],[106,80],[88,232],[82,292],[112,232],[120,292],{m:0,q:1,mir:-1}),
+      frustrado:P([100,60],[52,96],[80,48],[148,96],[120,48],[86,232],[76,292],[114,232],[124,292],{m:-1,gt:1,est:1}),
+      senalando:P([104,52],[72,128],[90,166],[152,112],[196,84],[88,232],[80,292],[112,232],[120,292],{m:.8,pun:1,mir:1}),
+      celular:P([100,60],[78,128],[98,120],[122,128],[104,120],[88,232],[82,292],[112,232],[118,292],{m:.2,cel:1,mir:0}),
+      celebrando:P([100,50],[62,74],[42,24],[138,74],[158,24],[78,232],[64,292],[122,232],[136,292],{m:1,est:1}),
+      mostrador:P([100,50],[66,138],[60,170],[134,138],[140,170],[88,232],[80,292],[112,232],[120,292],{m:.7,mos:1})
+    };
+    const flat=o=>[...o.h,...o.n,...o.c,...o.ei,...o.mi,...o.ed,...o.md,...o.ri,...o.pi,...o.rd,...o.pd,o.m,o.q,o.gt,o.cel,o.est,o.pun,o.mos,o.mir];
+    this.flat=flat;
+  },
+  pose(e,i,n){
+    const p=e.plantilla;
+    if(p==="mito"||p==="antes_despues")return "frustrado";
+    if(p==="chat")return "celular";
+    if(p==="ticket"||p==="celdas")return "mostrador";
+    if(p==="dato"||p==="grafico")return "senalando";
+    if(p==="titular")return i===0?"pensando":(i>=n-1?"celebrando":(i%2?"senalando":"parado"));
+    return i%2?"senalando":"parado";
+  },
+  anim(t){
+    const es=DATA.escenas,n=es.length;let k=0;
+    for(let i=0;i<n;i++)if(t>=es[i].ini-.001)k=i;
+    const cur=this.POSES[this.pose(es[k],k,n)],prev=k?this.POSES[this.pose(es[k-1],k-1,n)]:cur;
+    const b=k?spring(t-es[k].ini,160,13):1;
+    const a=this.flat(prev),c=this.flat(cur),v=a.map((x,i)=>x+(c[i]-x)*b);
+    const pt=(i)=>v[i*2]+","+v[i*2+1];
+    // respiración: todo el cuerpo sube y baja un poco
+    const R=this.R,bob=Math.sin(t*3)*2.5;
+    const pts=(...ix)=>ix.map(pt).join(" ");
+    // índices: 0 h,1 n,2 c,3 ei,4 mi,5 ed,6 md,7 ri,8 pi,9 rd,10 pd
+    R.torso.setAttribute("points",pts(1,2));
+    R.brI.setAttribute("points",pts(1,3,4));R.brD.setAttribute("points",pts(1,5,6));
+    R.pI.setAttribute("points",pts(2,7,8));R.pD.setAttribute("points",pts(2,9,10));
+    const hx=v[0],hy=v[1],m=v[22],mir=v[29];
+    R.cab.setAttribute("cx",hx);R.cab.setAttribute("cy",hy);
+    R.oi.setAttribute("cx",hx-9+mir*3);R.oi.setAttribute("cy",hy-4);R.od.setAttribute("cx",hx+9+mir*3);R.od.setAttribute("cy",hy-4);
+    R.boca.setAttribute("d",`M${hx-9} ${hy+10} Q${hx} ${hy+10+m*9} ${hx+9} ${hy+10}`);
+    const g=v[24],ph=(t*1.3)%1;
+    R.gota.setAttribute("transform",`translate(${hx+34},${hy-18+ph*30})`);R.gota.style.opacity=g*(1-ph);
+    R.gota2.setAttribute("transform",`translate(${hx-38},${hy-6+((ph+.5)%1)*30})`);R.gota2.style.opacity=g*(1-((ph+.5)%1));
+    R.que.setAttribute("x",hx+34);R.que.setAttribute("y",hy+2+Math.sin(t*4)*4);R.que.style.opacity=v[23];
+    R.cel.setAttribute("transform",`translate(${(v[8]+v[12])/2-3},${(v[9]+v[13])/2-4}) rotate(${-8+Math.sin(t*2)*3}) scale(1.7)`);R.cel.style.opacity=v[25];
+    // chispas / líneas de tensión alrededor de la cabeza
+    const s=v[26],w=Math.sin(t*14)*3;
+    R.est.style.opacity=s;
+    R.e1.setAttribute("d",`M${hx-48} ${hy-30+w} l-12 -10`);R.e2.setAttribute("d",`M${hx+48} ${hy-30-w} l12 -10`);
+    R.e3.setAttribute("d",`M${hx-56} ${hy} l-16 0`);R.e4.setAttribute("d",`M${hx+56} ${hy} l16 0`);
+    R.pun.setAttribute("transform",`translate(${v[12]+14},${v[13]}) rotate(${Math.sin(t*6)*6})`);R.pun.style.opacity=v[27];
+    R.mos.style.opacity=v[28];
+    R.suelo.style.opacity=.35*(1-v[28]);
+    R.torso.parentNode.style.transform=`translateY(${bob}px)`;
+  }
 }
 };
 

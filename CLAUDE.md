@@ -11,3 +11,4 @@ Pipeline de reels para mortups (Python 3.11+, uv, ffmpeg). Comando: `mortline`. 
 - Voz mínima 30 s (GGNarrator ~3,2 palabras/s; guion de 100–120 palabras); si no llega se reescribe el guion hasta 2 veces y si no, error.
 - Carpetas: final `~/Downloads/job/reels/<Título>/` (mp4, caption, portada); trabajo `data/trabajo/<fecha>_<slug>/` (guion, voz, créditos; `--rehacer` lo busca por título).
 - Violeta de marca solo en la placa final; fuentes OFL en `assets/fonts/`. Para ver los estilos sin generar un reel: `animado.cuadros(...)`.
+- Estilo `palitos`: muñeco de palitos SVG dibujado por código en `FONDOS.palitos` (poses interpoladas por escena según la plantilla, ocupa y=84..414; el contenido arranca en y>=450). Fuente Permanent Marker (Apache 2.0). Idea tomada de what-if-animation (MIT); no se copió código.

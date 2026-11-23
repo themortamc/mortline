@@ -62,6 +62,12 @@ ESTILOS: dict[str, dict] = {
         "ass": dict(fuente="Poppins", tam=98, negrita=1, texto="#111111", activo="#2B50FF",
                     borde="#F5F4EF", grosor=4, sombra=0, max_chars=15),
     },
+    "palitos": {
+        "desc": "muñeco de palitos dibujado por código (poses y objetos del negocio), papel claro, trazo negro grueso y un naranja",
+        "display": "PermanentMarker-Regular.ttf", "body": "PatrickHand-Regular.ttf",
+        "ass": dict(fuente="Permanent Marker", tam=96, negrita=0, texto="#111111", activo="#F26A1B",
+                    borde="#FBF8EF", grosor=7, sombra=0, max_chars=14),
+    },
 }
 # La marca (violeta) solo se usa para la placa final y como estilo por defecto de respaldo.
 ESTILOS["marca"] = {
@@ -108,6 +114,10 @@ VISUAL = {
                     card="#FFFFFF", cardb="#E3E1DA", cli="#ECEAE3", track="#E3E1DA",
                     rc="36px", bw="2px", sh="0 18px 50px rgba(17,17,17,.08)", df="PoppinsB", bf="PoppinsM", dpeso="700",
                     mov=dict(tipo="suave", y=0, x=70, giro=0)),
+    "palitos": dict(esc=0.9, bg="#FBF8EF", fg="#111111", mut="#555555", acc="#F26A1B", onacc="#FFFFFF", hl="#F26A1B",
+                    card="#FFFFFF", cardb="#111111", cli="#FFFFFF", track="#111111",
+                    rc="14px", bw="6px", sh="7px 7px 0 #111111", df="MarkerX", bf="PatrickX", dpeso="400",
+                    mov=dict(tipo="resorte", k=190, c=14, y=44, s=.88, r=-2, giro=.8)),
 }
 # Familias CSS -> archivo de fuente (todas OFL, en assets/fonts).
 FUENTES = {
@@ -115,7 +125,7 @@ FUENTES = {
     "DMSerifX": "DMSerifDisplay-Regular.ttf", "PoppinsM": "Poppins-Medium.ttf", "PoppinsS": "Poppins-SemiBold.ttf",
     "PoppinsB": "Poppins-Bold.ttf", "CourierX": "CourierPrime-Bold.ttf", "SpaceX": "SpaceMono-Bold.ttf",
     "BungeeX": "Bungee-Regular.ttf", "LilitaX": "LilitaOne-Regular.ttf",
-    "HankenX": "HankenGrotesk-ExtraBold.ttf",
+    "MarkerX": "PermanentMarker-Regular.ttf", "HankenX": "HankenGrotesk-ExtraBold.ttf",
 }
 
 
