@@ -117,7 +117,7 @@ Reels de motion graphics. Las plantillas viven en [`mortline/animado/escena.html
 resultado es determinista y se junta con ffmpeg. Sin GPU, 1 a 2 minutos de render por reel.
 
 **8 estilos visuales** ([`mortline/temas.py`](mortline/temas.py)), cada uno con su paleta, tipografía, fondo, lenguaje de movimiento y
-subtítulos: `cuaderno`, `pizarra`, `editorial`, `ticket`, `planilla`, `neon`, `pop`, `minimal`. Rotan solos y no se repiten en los
+subtítulos: `cuaderno`, `pizarra`, `editorial`, `ticket`, `planilla`, `neon`, `pop`, `minimal`, `palitos`. Rotan solos y no se repiten en los
 últimos 4 reels (`--estilo-visual X` lo fuerza). El violeta de la marca queda solo en la placa final.
 
 **8 formatos narrativos** ([`mortline/guion.py`](mortline/guion.py)): `problema-solucion`, `mito-verdad`, `top3-errores`, `cliente-tipo`,
