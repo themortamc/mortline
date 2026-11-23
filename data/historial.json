@@ -219,6 +219,19 @@
       "duracion": 15.09,
       "estilo": "animado",
       "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-22_2149_gimnasios-demo-gratuita"
+    },
+    {
+      "fecha": "2026-11-22T21:52:49",
+      "combo": "barberias/pos/caso",
+      "tema": "Barberías: ventas al día con panel",
+      "gancho": "Cerrás la caja y no sabés cuánto ganaste hoy.",
+      "titulo": "Panel de ventas para barberos",
+      "cta": "whatsapp",
+      "voz": "Puck",
+      "clips": [],
+      "duracion": 19.03,
+      "estilo": "animado",
+      "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-22_2151_barberias-ventas-al-dia-con-panel"
     }
   ]
 }
