@@ -206,6 +206,19 @@
       "duracion": 21.87,
       "estilo": "animado",
       "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-22_2142_ferreterias"
+    },
+    {
+      "fecha": "2026-11-22T21:51:26",
+      "combo": "gimnasios/demo/tip",
+      "tema": "gimnasios demo gratuita",
+      "gancho": "Te preguntan por turnos y estás atendiendo la puerta.",
+      "titulo": "Agenda de turnos sin desorden",
+      "cta": "guardar",
+      "voz": "Puck",
+      "clips": [],
+      "duracion": 15.09,
+      "estilo": "animado",
+      "carpeta": "/home/mortamc/Downloads/job/reels/2026-11-22_2149_gimnasios-demo-gratuita"
     }
   ]
 }
