@@ -153,7 +153,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         lineas.append(
             "Dialogue: 1,0:00:00.00," + _t(min(3.0, hasta)) + r",Titulo,,0,0,0,,{\fad(120,220)\move(84,366,84,330,0,260)}" + t
         )
-    pos = r"{\an5\pos(540,1180)}"
+    pos = r"{\an5\pos(540,1420)}"
     grupos = _grupos([p for p in palabras if p.inicio < hasta])
     for gi, grupo in enumerate(grupos):
         # Nunca encimar dos grupos: el grupo termina cuando empieza el siguiente.
