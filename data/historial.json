@@ -269,6 +269,22 @@
       "formato": "top3-errores",
       "carpeta": "/home/mortamc/Downloads/job/reels/Errores de WhatsApp en rotiserías",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-22_2222_tres-errores-comunes-en-rotiserias-y-bares-al-us"
+    },
+    {
+      "fecha": "2026-11-22T22:28:00",
+      "combo": "barberias/anuncios/cliente-tipo",
+      "tema": "Historia de un dueño de barbería que usa campañas en Meta y Google",
+      "gancho": "Conocí a un barbero con el local vacío todo el día.",
+      "titulo": "Turnos web sin depender del boca a boca",
+      "cta": "guardar",
+      "voz": "",
+      "clips": [],
+      "duracion": 33.71,
+      "estilo": "animado",
+      "estilo_visual": "editorial",
+      "formato": "cliente-tipo",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Turnos web sin depender del boca a boca",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-22_2225_historia-de-un-dueno-de-barberia-que-usa-campana"
     }
   ]
 }
