@@ -477,6 +477,22 @@
       "formato": "tutorial-3-pasos",
       "carpeta": "/home/mortamc/Downloads/job/reels/Menú digital sin fricciones",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-25_2149_menu-digital-con-qr-para-restaurantes-y-rotiseri"
+    },
+    {
+      "fecha": "2026-11-25T21:52:25",
+      "combo": "barberias/demo/mito-verdad",
+      "tema": "Mito: es caro y complicado armar un sistema de turnos y pedidos para una barbería.",
+      "gancho": "Creés que para una barbería es demasiado armar el sistema de turnos?",
+      "titulo": "Tu barbería también lo puede",
+      "cta": "whatsapp",
+      "voz": "",
+      "clips": [],
+      "duracion": 35.2,
+      "estilo": "animado",
+      "estilo_visual": "planilla",
+      "formato": "mito-verdad",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Tu barbería también lo puede",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-25_2151_mito-es-caro-y-complicado-armar-un-sistema-de-tu"
     }
   ]
 }
