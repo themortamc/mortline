@@ -493,6 +493,22 @@
       "formato": "mito-verdad",
       "carpeta": "/home/mortamc/Downloads/job/reels/Tu barbería también lo puede",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-25_2151_mito-es-caro-y-complicado-armar-un-sistema-de-tu"
+    },
+    {
+      "fecha": "2026-11-25T21:54:13",
+      "combo": "indumentaria/planillas/pregunta",
+      "tema": "Planillas digitales para indumentaria",
+      "gancho": "¿Contás tallas a mano y te equivocás?",
+      "titulo": "Ordená el stock de tu local",
+      "cta": "comentario",
+      "voz": "",
+      "clips": [],
+      "duracion": 35.13,
+      "estilo": "animado",
+      "estilo_visual": "editorial",
+      "formato": "pregunta",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Ordená el stock de tu local (2)",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-25_2152_planillas-digitales-para-indumentaria"
     }
   ]
 }
