@@ -509,6 +509,22 @@
       "formato": "pregunta",
       "carpeta": "/home/mortamc/Downloads/job/reels/Ordená el stock de tu local (2)",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-25_2152_planillas-digitales-para-indumentaria"
+    },
+    {
+      "fecha": "2026-11-25T21:56:42",
+      "combo": "gimnasios/catalogo/top3-errores",
+      "tema": "Top 3 errores: gimnasios",
+      "gancho": "Primero, manejás los turnos a mano y se te cae el día.",
+      "titulo": "Errores en tu gimnasio",
+      "cta": "whatsapp",
+      "voz": "",
+      "clips": [],
+      "duracion": 39.91,
+      "estilo": "animado",
+      "estilo_visual": "neon",
+      "formato": "top3-errores",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Errores en tu gimnasio",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-25_2154_top-3-errores-gimnasios"
     }
   ]
 }
