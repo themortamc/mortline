@@ -525,6 +525,22 @@
       "formato": "top3-errores",
       "carpeta": "/home/mortamc/Downloads/job/reels/Errores en tu gimnasio",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-25_2154_top-3-errores-gimnasios"
+    },
+    {
+      "fecha": "2026-11-25T21:58:34",
+      "combo": "talleres/planillas/cliente-tipo",
+      "tema": "Planillas digitales para talleres mecánicos: organización de trabajos y clientes.",
+      "gancho": "Conocí a un mecánico que seguía anotando todo en cuadernos viejos.",
+      "titulo": "Planillas para talleres mecánicos",
+      "cta": "guardar",
+      "voz": "",
+      "clips": [],
+      "duracion": 32.95,
+      "estilo": "animado",
+      "estilo_visual": "pop",
+      "formato": "cliente-tipo",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Planillas para talleres mecánicos",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-25_2157_planillas-digitales-para-talleres-mecanicos-orga"
     }
   ]
 }
