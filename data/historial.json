@@ -541,6 +541,22 @@
       "formato": "cliente-tipo",
       "carpeta": "/home/mortamc/Downloads/job/reels/Planillas para talleres mecánicos",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-25_2157_planillas-digitales-para-talleres-mecanicos-orga"
+    },
+    {
+      "fecha": "2026-11-25T22:00:28",
+      "combo": "clinicas/anuncios/dato-sorprendente",
+      "tema": "Anuncios en Meta y Google para clínicas",
+      "gancho": "¿Vos ya publicaste en Instagram para tu clínica?",
+      "titulo": "Agenda clínica llena",
+      "cta": "whatsapp",
+      "voz": "",
+      "clips": [],
+      "duracion": 36.73,
+      "estilo": "animado",
+      "estilo_visual": "minimal",
+      "formato": "dato-sorprendente",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Agenda clínica llena",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-25_2158_anuncios-en-meta-y-google-para-clinicas"
     }
   ]
 }
