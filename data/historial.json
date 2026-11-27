@@ -589,6 +589,22 @@
       "formato": "problema-solucion",
       "carpeta": "/home/mortamc/Downloads/job/reels/Metalúrgica cotice menos, venda más",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-27_2032_metalurgica"
+    },
+    {
+      "fecha": "2026-11-27T20:36:05",
+      "combo": null,
+      "tema": "Metalúrgica",
+      "gancho": "¿Contás chapas y barras cada fin de semana?",
+      "titulo": "¿Stock a la ciega?",
+      "cta": "guardar",
+      "voz": "",
+      "clips": [],
+      "duracion": 38.12,
+      "estilo": "animado",
+      "estilo_visual": "planilla",
+      "formato": "pregunta",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Stock a la ciega",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-27_2034_metalurgica"
     }
   ]
 }
