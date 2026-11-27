@@ -573,6 +573,22 @@
       "formato": "antes-despues",
       "carpeta": "/home/mortamc/Downloads/job/reels/Tu cuaderno de presupuestos",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-27_2030_metalurgica"
+    },
+    {
+      "fecha": "2026-11-27T20:34:13",
+      "combo": null,
+      "tema": "metalurgica",
+      "gancho": "Cotizar cada corte a mano te come el día.",
+      "titulo": "Metalúrgica: cotice menos, venda más",
+      "cta": "whatsapp",
+      "voz": "",
+      "clips": [],
+      "duracion": 36.6,
+      "estilo": "animado",
+      "estilo_visual": "pizarra",
+      "formato": "problema-solucion",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Metalúrgica cotice menos, venda más",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-27_2032_metalurgica"
     }
   ]
 }
