@@ -621,6 +621,22 @@
       "formato": "tutorial-3-pasos",
       "carpeta": "/home/mortamc/Downloads/job/reels/Cotizar metalúrgico sin errores",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-27_2036_metalurgica"
+    },
+    {
+      "fecha": "2026-11-27T20:42:31",
+      "combo": null,
+      "tema": "Mito y verdad sobre digitalizar una metalúrgica",
+      "gancho": "Creés que digitalizar una metalúrgica es solo para fábricas gigantes.",
+      "titulo": "Digitalizar tu metalúrgica",
+      "cta": "comentario",
+      "voz": "",
+      "clips": [],
+      "duracion": 41.75,
+      "estilo": "animado",
+      "estilo_visual": "minimal",
+      "formato": "mito-verdad",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Digitalizar tu metalúrgica",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-27_2041_mito-y-verdad-sobre-digitalizar-una-metalurgica"
     }
   ]
 }
