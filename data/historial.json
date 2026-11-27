@@ -605,6 +605,22 @@
       "formato": "pregunta",
       "carpeta": "/home/mortamc/Downloads/job/reels/Stock a la ciega",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-27_2034_metalurgica"
+    },
+    {
+      "fecha": "2026-11-27T20:39:33",
+      "combo": null,
+      "tema": "metalurgica",
+      "gancho": "Cotizar a mano en metalúrgica hace perder clientes.",
+      "titulo": "Cotizar metalúrgico sin errores",
+      "cta": "whatsapp",
+      "voz": "",
+      "clips": [],
+      "duracion": 39.7,
+      "estilo": "animado",
+      "estilo_visual": "palitos",
+      "formato": "tutorial-3-pasos",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Cotizar metalúrgico sin errores",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-27_2036_metalurgica"
     }
   ]
 }
