@@ -765,6 +765,22 @@
       "formato": "dato-sorprendente",
       "carpeta": "/home/mortamc/Downloads/job/reels/Repuestos de moto sin stock",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-28_0216_repuestosymotocicletas"
+    },
+    {
+      "fecha": "2026-11-28T02:21:32",
+      "combo": null,
+      "tema": "repuestosyagenciademotos",
+      "gancho": "¿Te frenás a vender porque no sabés si tenés la medida?",
+      "titulo": "Stock de repuestos claro",
+      "cta": "whatsapp",
+      "voz": "",
+      "clips": [],
+      "duracion": 34.38,
+      "estilo": "animado",
+      "estilo_visual": "pop",
+      "formato": "pregunta",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Stock de repuestos claro",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-28_0218_repuestosyagenciademotos"
     }
   ]
 }
