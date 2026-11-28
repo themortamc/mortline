@@ -653,6 +653,22 @@
       "formato": "top3-errores",
       "carpeta": "/home/mortamc/Downloads/job/reels/Errores metalúrgicas a medida",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-27_2114_metalurgicaquehacetrabajostiporejasyasielaborado"
+    },
+    {
+      "fecha": "2026-11-27T21:17:44",
+      "combo": null,
+      "tema": "metalurgicaquehacetrabajostiporejasyasielaboradosyamedida",
+      "gancho": "¿Sigues cotizando estructuras metálicas escribiendo a mano?",
+      "titulo": "Cotizar metal a mano",
+      "cta": "guardar",
+      "voz": "",
+      "clips": [],
+      "duracion": 38.73,
+      "estilo": "animado",
+      "estilo_visual": "ticket",
+      "formato": "dato-sorprendente",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Cotizar metal a mano",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-27_2116_metalurgicaquehacetrabajostiporejasyasielaborado"
     }
   ]
 }
