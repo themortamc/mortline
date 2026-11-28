@@ -717,6 +717,22 @@
       "formato": "cliente-tipo",
       "carpeta": "/home/mortamc/Downloads/job/reels/Ordená tu taller metálico",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-27_2121_metalurgicaquehacetrabajostiporejaysiasedosyamed"
+    },
+    {
+      "fecha": "2026-11-28T01:54:54",
+      "combo": null,
+      "tema": "orden en ferretería",
+      "gancho": "¿Perdés el día buscando tornillos en el stock?",
+      "titulo": "Orden en tu ferretería",
+      "cta": "guardar",
+      "voz": "",
+      "clips": [],
+      "duracion": 36.61,
+      "estilo": "animado",
+      "estilo_visual": "palitos",
+      "formato": "tutorial-3-pasos",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Orden en tu ferretería",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-28_0152_orden-en-ferreteria"
     }
   ]
 }
