@@ -733,6 +733,22 @@
       "formato": "tutorial-3-pasos",
       "carpeta": "/home/mortamc/Downloads/job/reels/Orden en tu ferretería",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-28_0152_orden-en-ferreteria"
+    },
+    {
+      "fecha": "2026-11-28T01:59:44",
+      "combo": null,
+      "tema": "errores_ferreteria",
+      "gancho": "Tres errores que arruinan tu ferretería hoy. Mira si te pasa.",
+      "titulo": "Tres errores comunes en ferreterías",
+      "cta": "whatsapp",
+      "voz": "",
+      "clips": [],
+      "duracion": 38.93,
+      "estilo": "animado",
+      "estilo_visual": "minimal",
+      "formato": "top3-errores",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Tres errores comunes en ferreterías",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-28_0157_errores-ferreteria"
     }
   ]
 }
