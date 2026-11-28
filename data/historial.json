@@ -749,6 +749,22 @@
       "formato": "mito-verdad",
       "carpeta": "/home/mortamc/Downloads/job/reels/Tu catálogo digital, en marcha",
       "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-28_0200_hipotesisderiemann"
+    },
+    {
+      "fecha": "2026-11-28T02:18:00",
+      "combo": null,
+      "tema": "repuestosymotocicletas",
+      "gancho": "El cliente pregunta si hay un repuesto raro.",
+      "titulo": "Repuestos de moto sin stock",
+      "cta": "comentario",
+      "voz": "",
+      "clips": [],
+      "duracion": 32.75,
+      "estilo": "animado",
+      "estilo_visual": "planilla",
+      "formato": "dato-sorprendente",
+      "carpeta": "/home/mortamc/Downloads/job/reels/Repuestos de moto sin stock",
+      "trabajo": "/home/mortamc/Downloads/job/mortline/data/trabajo/2026-11-28_0216_repuestosymotocicletas"
     }
   ]
 }
